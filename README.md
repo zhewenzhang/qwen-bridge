@@ -1,32 +1,34 @@
-# Qwen Bridge
+# AutoClaude
 
-> Seamlessly connect Claude Code to external coding agents. Plan with Claude, execute with Qwen Code or Cursor — save tokens, ship faster.
+> Plan with Claude. Execute Everywhere. — The MCP bridge that connects Claude Code to Qwen Code & Cursor.
+
+🌐 **[Landing Page](https://zhewenzhang.github.io/qwen-bridge/)**
 
 [![MCP](https://img.shields.io/badge/MCP-Protocol-blue?logo=anthropic)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.0.0-brightgreen)](https://github.com/zhewenzhang/qwen-bridge)
+[![Version](https://img.shields.io/badge/version-4.0.0-brightgreen)](https://github.com/zhewenzhang/qwen-bridge)
 
 ---
 
-## What is Qwen Bridge?
+## What is AutoClaude?
 
-Qwen Bridge is an **MCP (Model Context Protocol) Server** that gives Claude Code the ability to dispatch coding tasks to external AI coding agents — **Qwen Code** and **Cursor AI**.
+AutoClaude is an **MCP (Model Context Protocol) Server** that gives Claude Code the ability to dispatch coding tasks to external AI coding agents — **Qwen Code** and **Cursor AI**.
 
-Claude handles strategy and planning. The bridge fires off execution tasks silently in the background. Each tool uses its own token pool, so Claude stays lean while heavy lifting happens elsewhere.
+Claude handles strategy and planning. AutoClaude fires off execution tasks silently in the background. Each tool uses its own token pool, so Claude stays lean while heavy lifting happens elsewhere.
 
 | Tool | What it does |
 |------|-------------|
 | `dispatch_to_qwen` | Pipes a task file to Qwen Code running headless in the background with YOLO (auto-approve) mode. Zero interaction needed. |
 | `dispatch_to_cursor` | Copies task content to clipboard so you can paste it into Cursor AI chat. Optionally launches Cursor. |
-| `qwen_bridge_status` | Prints current config and confirms the bridge is alive. |
+| `qwen_bridge_status` | Prints current config and confirms AutoClaude is alive. |
 
 **The workflow**: Claude plans the architecture, writes detailed task files (`QWEN_*.md` / `CURSOR_*.md`), then dispatches them. Qwen Code executes silently in the background, or Cursor picks up the clipboard content. **Claude tokens stay free for planning.**
 
 ```mermaid
 flowchart LR
-    A[Claude Code<br/>Planning & Strategy] -->|dispatch_to_qwen| B[Qwen Bridge<br/>MCP Server]
+    A[Claude Code<br/>Planning & Strategy] -->|dispatch_to_qwen| B[AutoClaude<br/>MCP Server]
     A -->|dispatch_to_cursor| B
     B -->|Background spawn + pipe| C[Qwen Code<br/>Headless Execution]
     B -->|Clipboard + Launch| D[Cursor AI<br/>Execution]
@@ -36,11 +38,11 @@ flowchart LR
 
 ## Why This Exists
 
-Claude Code excels at **planning** — architecture, code review, debugging strategy. But large implementations burn tokens fast. Qwen Code and Cursor have their own token pools. This bridge lets you:
+Claude Code excels at **planning** — architecture, code review, debugging strategy. But large implementations burn tokens fast. Qwen Code and Cursor have their own token pools. AutoClaude lets you:
 
 1. **Plan strategically in Claude** (low token usage)
 2. **Execute in Qwen/Cursor** (uses their tokens, not Claude's)
-3. **Zero manual copy-paste** — the bridge handles dispatch, notifications, clipboard, and background execution
+3. **Zero manual copy-paste** — AutoClaude handles dispatch, notifications, clipboard, and background execution
 4. **YOLO mode by default** — Qwen Code auto-approves all actions, no confirmation prompts
 
 ## Installation
@@ -64,7 +66,7 @@ Edit `config.json`:
   "terminalApp": "wt.exe",
   "notifyOnDispatch": true,
   "speechOnDispatch": true,
-  "speechText": "Bridge task dispatched",
+  "speechText": "AutoClaude task dispatched",
   "showTerminal": false,
   "yoloMode": true
 }
@@ -78,9 +80,9 @@ Edit `config.json`:
 | `terminalApp` | `wt.exe` | Terminal emulator (only used when `showTerminal` is on) |
 | `notifyOnDispatch` | `true` | Show a Windows toast notification on dispatch |
 | `speechOnDispatch` | `true` | Play a voice alert on dispatch |
-| `speechText` | `"Bridge task dispatched"` | The phrase spoken aloud |
-| `showTerminal` | `false` | **New in v3.0** — Set to `true` to open a visible Windows Terminal tab instead of running headless |
-| `yoloMode` | `true` | **New in v3.0** — Auto-approve all Qwen Code actions (no confirmation prompts) |
+| `speechText` | `"AutoClaude task dispatched"` | The phrase spoken aloud |
+| `showTerminal` | `false` | **New in v4.0** — Set to `true` to open a visible Windows Terminal tab instead of running headless |
+| `yoloMode` | `true` | **New in v4.0** — Auto-approve all Qwen Code actions (no confirmation prompts) |
 
 ## Register with Claude Code
 
@@ -89,7 +91,7 @@ Add this to your Claude Code settings (`~/.claude/settings.json` or project `.cl
 ```json
 {
   "mcpServers": {
-    "qwen-bridge": {
+    "autoclaude": {
       "command": "node",
       "args": ["D:\\qwen-bridge\\dist\\index.js"],
       "env": {}
@@ -111,9 +113,9 @@ Claude: Write QWEN_IMPLEMENT_AUTH.md with full implementation steps
 Claude: Then dispatch_to_qwen("QWEN_IMPLEMENT_AUTH.md", "Implement OAuth login flow")
 ```
 
-What happens (v3.0 headless mode):
-- Windows notification pops up: *"Qwen Bridge — Implement OAuth login flow"*
-- Voice alert plays: *"Bridge task dispatched"*
+What happens (v4.0 headless mode):
+- Windows notification pops up: *"AutoClaude — Implement OAuth login flow"*
+- Voice alert plays: *"AutoClaude task dispatched"*
 - Qwen Code spawns **silently in the background** with YOLO mode (auto-approve)
 - Output is written to `QWEN_IMPLEMENT_AUTH_result.log` beside the task file
 - Claude is **free immediately** — continue planning while Qwen executes
@@ -132,22 +134,22 @@ What happens:
 - Windows notification + voice alert fire
 - Open Cursor AI chat (`Ctrl+Shift+J`), paste (`Ctrl+V`), done
 
-### 3. Check Bridge Status
+### 3. Check AutoClaude Status
 
 ```
-Claude: Check if the bridge is running
+Claude: Check if AutoClaude is running
 ```
 
 Claude calls `qwen_bridge_status` and reports back the config and available tools.
 
 ## How the Dispatch Works (Under the Hood)
 
-### Qwen Code (v3.0 headless)
+### Qwen Code (v4.0 headless)
 
 ```
 1. Claude calls dispatch_to_qwen("task.md")
         │
-2. Bridge validates the file exists
+2. AutoClaude validates the file exists
         │
 3. Sends Windows toast notification + speech alert
         │
@@ -155,7 +157,7 @@ Claude calls `qwen_bridge_status` and reports back the config and available tool
         │
 5. Pipes task content to qwen's stdin, captures stdout/stderr to task_result.log
         │
-6. Bridge returns "✅ Dispatched" to Claude immediately
+6. AutoClaude returns "✅ Dispatched" to Claude immediately
         │
 7. Claude is free. Qwen Code runs headless in the background with YOLO auto-approval.
 ```
@@ -165,13 +167,13 @@ Claude calls `qwen_bridge_status` and reports back the config and available tool
 ```
 1. Claude calls dispatch_to_cursor("task.md")
         │
-2. Bridge reads task content → copies to Windows clipboard
+2. AutoClaude reads task content → copies to Windows clipboard
         │
 3. Sends notification + speech alert
         │
 4. Optionally opens Cursor and a terminal banner (if showTerminal is on)
         │
-5. Bridge returns "✅ Dispatched" to Claude immediately
+5. AutoClaude returns "✅ Dispatched" to Claude immediately
         │
 6. User pastes (Ctrl+V) into Cursor AI chat → Cursor executes
 ```
@@ -181,12 +183,13 @@ Claude calls `qwen_bridge_status` and reports back the config and available tool
 ```
 qwen-bridge/
 ├── src/
-│   └── index.ts          # MCP Server main program
+│   └── index.ts          # AutoClaude MCP Server main program
 ├── dist/
 │   └── index.js          # Compiled output
 ├── config.json           # Your configuration
 ├── package.json
 ├── tsconfig.json
+├── index.html            # Landing page (GitHub Pages)
 └── README.md
 ```
 

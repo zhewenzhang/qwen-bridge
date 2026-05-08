@@ -1,5 +1,6 @@
 {
-  "name": "qwen-bridge",
+  "name": "autoclaude",
+  "description": "AutoClaude — Seamlessly connect Claude Code to Qwen Code & Cursor. Plan with Claude, execute elsewhere.",
   "version": "1.0.0",
   "private": true,
   "type": "module",

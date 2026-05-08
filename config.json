@@ -5,7 +5,7 @@
   "terminalApp": "wt.exe",
   "notifyOnDispatch": true,
   "speechOnDispatch": true,
-  "speechText": "Bridge task dispatched",
+  "speechText": "AutoClaude task dispatched",
   "showTerminal": false,
   "yoloMode": true
 }

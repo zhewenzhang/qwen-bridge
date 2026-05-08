@@ -49,7 +49,7 @@ function sendWindowsNotification(title: string, message: string): void {
       $xml.SelectSingleNode('//text[@id=1]').InnerText = '${title.replace(/'/g, "''")}';
       $xml.SelectSingleNode('//text[@id=2]').InnerText = '${message.replace(/'/g, "''")}';
       $toast = [Windows.UI.Notifications.ToastNotification]::new($xml);
-      [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Agent Bridge').Show($toast);
+      [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('AutoClaude').Show($toast);
     `.trim();
     execSync(`powershell -Command "${ps}"`, { timeout: 3000, stdio: 'pipe' });
   } catch {
@@ -101,7 +101,7 @@ function runQwen(config: BridgeConfig, taskPath: string, taskName: string): void
       `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
       `Write-Host ''`,
       `Write-Host '========================================' -ForegroundColor Yellow`,
-      `Write-Host '  QWEN BRIDGE -- Task Dispatched' -ForegroundColor Yellow`,
+      `Write-Host '  AutoClaude — Task Dispatched' -ForegroundColor Yellow`,
       `Write-Host '========================================' -ForegroundColor Yellow`,
       `Write-Host '  File: ${taskPath.replace(/'/g, "''")}' -ForegroundColor Cyan`,
       ...(config.yoloMode ? [`Write-Host '  Mode: YOLO (auto-approve)' -ForegroundColor Green`] : []),
@@ -138,7 +138,7 @@ function runCursor(config: BridgeConfig, taskPath: string, taskName: string, _cl
       `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
       `Write-Host ''`,
       `Write-Host '================================================' -ForegroundColor Cyan`,
-      `Write-Host '  CURSOR BRIDGE -- Task Dispatched' -ForegroundColor Cyan`,
+      `Write-Host '  AutoClaude — Task Dispatched' -ForegroundColor Cyan`,
       `Write-Host '================================================' -ForegroundColor Cyan`,
       `Write-Host '  Task : ${taskName.substring(0, 38)}' -ForegroundColor White`,
       `Write-Host '  File : ${path.basename(taskPath).substring(0, 38)}' -ForegroundColor White`,
@@ -167,7 +167,7 @@ function runCursor(config: BridgeConfig, taskPath: string, taskName: string, _cl
 
 // ─── MCP Server ───────────────────────────────────────────────────────────────
 const server = new Server(
-  { name: 'qwen-bridge', version: '3.0.0' },
+  { name: 'autoclaude', version: '4.0.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -176,7 +176,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'dispatch_to_qwen',
       description:
-        'Dispatch a task markdown file to Qwen Code for background execution. ' +
+        'AutoClaude dispatches tasks to Qwen Code for background execution. ' +
         'Qwen Code runs headless (no terminal window) in YOLO mode (auto-approve all actions). ' +
         'Output is written to a _result.log file beside the task file. ' +
         'Sends a Windows notification and speech alert. Claude returns immediately. ' +
@@ -225,7 +225,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'qwen_bridge_status',
-      description: 'Check that the agent bridge is running and show current config.',
+      description: 'Check that AutoClaude is running and show current config.',
       inputSchema: { type: 'object' as const, properties: {} },
     },
   ],
@@ -255,7 +255,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const taskName = path.basename(taskPath, '.md');
     const notifMsg = description ?? `Task ready: ${taskName}`;
 
-    if (config.notifyOnDispatch) sendWindowsNotification('Qwen Bridge', notifMsg);
+    if (config.notifyOnDispatch) sendWindowsNotification('AutoClaude', notifMsg);
     if (config.speechOnDispatch) sendSpeech(config.speechText);
     runQwen(config, taskPath, taskName);
 
@@ -271,7 +271,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           `   Terminal   : ${config.showTerminal ? 'visible' : 'headless (background)'}`,
           `   Result log : ${resultLog}`,
           '',
-          'Qwen Code is executing in the background with full auto-approval.',
+          'AutoClaude dispatched — Qwen Code executing in the background with full auto-approval.',
           'Check the result log for progress. Claude is free.',
         ].join('\n'),
       }],
@@ -311,7 +311,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     // 2. Notification + speech
     if (config.notifyOnDispatch) {
-      sendWindowsNotification('Cursor Bridge', notifMsg + (clipboardOk ? ' — Content in clipboard' : ''));
+      sendWindowsNotification('AutoClaude', notifMsg + (clipboardOk ? ' — Content in clipboard' : ''));
     }
     if (config.speechOnDispatch) {
       sendSpeech(config.speechText + (clipboardOk ? ' — content in clipboard' : ''));
@@ -345,7 +345,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       content: [{
         type: 'text' as const,
         text: [
-          '✅ Agent Bridge is running (v3.0)',
+          '✅ AutoClaude is running (v4.0)',
           '',
           'Current config:',
           `  projectDir      : ${config.projectDir}`,
