@@ -187,7 +187,7 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node dist/index.js
 
 ## Author
 
-Created by [@zhewenzhang](https://github.com/zhewenzhang)
+Created by [ @zhewenzhang](https://github.com/zhewenzhang)
 
 ## License
 

@@ -5,5 +5,7 @@
   "terminalApp": "wt.exe",
   "notifyOnDispatch": true,
   "speechOnDispatch": true,
-  "speechText": "Qwen task dispatched"
+  "speechText": "Qwen task dispatched",
+  "showTerminal": false,
+  "yoloMode": true
 }

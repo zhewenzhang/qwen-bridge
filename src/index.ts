@@ -22,6 +22,8 @@ interface BridgeConfig {
   notifyOnDispatch: boolean;
   speechOnDispatch: boolean;
   speechText: string;
+  showTerminal: boolean;
+  yoloMode: boolean;
 }
 
 function loadConfig(): BridgeConfig {
@@ -29,9 +31,10 @@ function loadConfig(): BridgeConfig {
     throw new Error(`Config not found: ${CONFIG_PATH}`);
   }
   const raw = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8')) as Partial<BridgeConfig>;
-  // provide defaults for new fields
   return {
     cursorCommand: 'cursor',
+    showTerminal: false,
+    yoloMode: true,
     ...raw,
   } as BridgeConfig;
 }
@@ -82,94 +85,81 @@ function copyToClipboard(text: string): void {
   );
 }
 
-// ─── Terminal Launch ──────────────────────────────────────────────────────────
+// ─── Qwen / Cursor Launch ─────────────────────────────────────────────────────
 
-function writePs1(filePath: string, lines: string[]): void {
-  // Write UTF-8 with BOM for Windows PowerShell compatibility
-  const bom = '﻿';
-  fs.writeFileSync(filePath, bom + lines.join('\n') + '\n', 'utf-8');
-}
+/** Run Qwen Code — headless background (default) or visible terminal tab. */
+function runQwen(config: BridgeConfig, taskPath: string, taskName: string): void {
+  const resultLog = taskPath.replace(/\.md$/, '_result.log');
+  const args = config.yoloMode ? ['-y', '--output-format', 'text'] : ['--output-format', 'text'];
 
-function launchQwenInTerminal(config: BridgeConfig, taskPath: string, taskName: string): void {
-  const tabTitle = `Qwen: ${taskName}`;
-  const safeTaskPath = taskPath.replace(/'/g, "''");
-  const safeProjectDir = config.projectDir.replace(/'/g, "''");
-
-  // Write script to temp file to avoid command-line quoting issues with -Command
-  const ps1Path = path.join(os.tmpdir(), `_bridge_qwen_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.ps1`);
-  writePs1(ps1Path, [
-    `Set-Location '${safeProjectDir}'`,
-    `Write-Host ''`,
-    `Write-Host '========================================' -ForegroundColor Yellow`,
-    `Write-Host '  QWEN BRIDGE -- Task Dispatched' -ForegroundColor Yellow`,
-    `Write-Host '========================================' -ForegroundColor Yellow`,
-    `Write-Host '  File: ${safeTaskPath}' -ForegroundColor Cyan`,
-    `Write-Host '========================================' -ForegroundColor Yellow`,
-    `Write-Host ''`,
-    `& ${config.qwenCommand} -i "Read and execute the task instructions from ${safeTaskPath}. Follow each step exactly as written."`,
-  ]);
-
-  try {
-    spawn(
-      config.terminalApp,
-      ['-w', '0', 'new-tab', '--title', tabTitle, 'powershell.exe', '-NoExit', '-File', ps1Path],
-      { detached: true, stdio: 'ignore', shell: false }
-    ).unref();
-  } catch {
-    // Fallback: simpler launch without wt.exe
-    spawn(
-      'powershell.exe',
-      ['-NoExit', '-File', ps1Path],
-      { detached: true, stdio: 'ignore', shell: false }
-    ).unref();
+  if (config.showTerminal) {
+    // Visible terminal: open Windows Terminal tab, show banner, pipe task to qwen
+    const ps1Path = path.join(os.tmpdir(), `_bridge_qwen_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.ps1`);
+    const bom = '﻿';
+    const yoloFlag = config.yoloMode ? ' -y' : '';
+    fs.writeFileSync(ps1Path, bom + [
+      `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
+      `Write-Host ''`,
+      `Write-Host '========================================' -ForegroundColor Yellow`,
+      `Write-Host '  QWEN BRIDGE -- Task Dispatched' -ForegroundColor Yellow`,
+      `Write-Host '========================================' -ForegroundColor Yellow`,
+      `Write-Host '  File: ${taskPath.replace(/'/g, "''")}' -ForegroundColor Cyan`,
+      ...(config.yoloMode ? [`Write-Host '  Mode: YOLO (auto-approve)' -ForegroundColor Green`] : []),
+      `Write-Host '========================================' -ForegroundColor Yellow`,
+      `Write-Host ''`,
+      `Get-Content '${taskPath.replace(/'/g, "''")}' -Raw | & ${config.qwenCommand}${yoloFlag} --output-format text`,
+    ].join('\n') + '\n', 'utf-8');
+    try {
+      spawn(config.terminalApp, ['-w', '0', 'new-tab', '--title', `Qwen: ${taskName}`, 'powershell.exe', '-NoExit', '-File', ps1Path], { detached: true, stdio: 'ignore', shell: false }).unref();
+    } catch {
+      spawn('powershell.exe', ['-NoExit', '-File', ps1Path], { detached: true, stdio: 'ignore', shell: false }).unref();
+    }
+  } else {
+    // Headless: direct spawn qwen via its .cmd wrapper, pipe task to stdin, capture output to log
+    const taskContent = fs.readFileSync(taskPath, 'utf-8');
+    const logFd = fs.openSync(resultLog, 'w');
+    const child = spawn(config.qwenCommand, args, {
+      stdio: ['pipe', logFd, logFd],
+      shell: true,
+    });
+    child.stdin!.write(taskContent);
+    child.stdin!.end();
+    child.on('close', () => { try { fs.closeSync(logFd); } catch {} });
+    child.unref();
   }
 }
 
-function launchCursor(config: BridgeConfig, taskPath: string, taskName: string): void {
-  const tabTitle = `Cursor: ${taskName}`;
-  const safeTaskPath = taskPath.replace(/'/g, "''");
-  const safeProjectDir = config.projectDir.replace(/'/g, "''");
-  const shortTask = taskName.substring(0, 38);
-  const shortFile = path.basename(taskPath).substring(0, 38);
-
-  // Write banner script to temp file
-  const ps1Path = path.join(os.tmpdir(), `_bridge_cursor_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.ps1`);
-  writePs1(ps1Path, [
-    `Set-Location '${safeProjectDir}'`,
-    `Write-Host ''`,
-    `Write-Host '================================================' -ForegroundColor Cyan`,
-    `Write-Host '  CURSOR BRIDGE -- Task Dispatched' -ForegroundColor Cyan`,
-    `Write-Host '================================================' -ForegroundColor Cyan`,
-    `Write-Host '  Task : ${shortTask}' -ForegroundColor White`,
-    `Write-Host '  File : ${shortFile}' -ForegroundColor White`,
-    `Write-Host '================================================' -ForegroundColor Cyan`,
-    `Write-Host '  [OK] Task content copied to CLIPBOARD' -ForegroundColor Green`,
-    `Write-Host '  --> Open Cursor AI chat and press Ctrl+V' -ForegroundColor Yellow`,
-    `Write-Host '================================================' -ForegroundColor Cyan`,
-    `Write-Host ''`,
-    `Write-Host 'Task file content:' -ForegroundColor Gray`,
-    `Get-Content '${safeTaskPath}' | Write-Host -ForegroundColor Gray`,
-  ]);
-
-  try {
-    spawn(
-      config.terminalApp,
-      ['-w', '0', 'new-tab', '--title', tabTitle, 'powershell.exe', '-NoExit', '-File', ps1Path],
-      { detached: true, stdio: 'ignore', shell: false }
-    ).unref();
-  } catch {
-    spawn(
-      'powershell.exe',
-      ['-NoExit', '-File', ps1Path],
-      { detached: true, stdio: 'ignore', shell: false }
-    ).unref();
+/** Show Cursor task banner (terminal mode) or just clipboard + notification (headless). */
+function runCursor(config: BridgeConfig, taskPath: string, taskName: string, _clipboardOk: boolean): void {
+  if (config.showTerminal) {
+    const ps1Path = path.join(os.tmpdir(), `_bridge_cursor_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.ps1`);
+    const bom = '﻿';
+    fs.writeFileSync(ps1Path, bom + [
+      `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
+      `Write-Host ''`,
+      `Write-Host '================================================' -ForegroundColor Cyan`,
+      `Write-Host '  CURSOR BRIDGE -- Task Dispatched' -ForegroundColor Cyan`,
+      `Write-Host '================================================' -ForegroundColor Cyan`,
+      `Write-Host '  Task : ${taskName.substring(0, 38)}' -ForegroundColor White`,
+      `Write-Host '  File : ${path.basename(taskPath).substring(0, 38)}' -ForegroundColor White`,
+      `Write-Host '================================================' -ForegroundColor Cyan`,
+      `Write-Host '  [OK] Task content copied to CLIPBOARD' -ForegroundColor Green`,
+      `Write-Host '  --> Open Cursor AI chat and press Ctrl+V' -ForegroundColor Yellow`,
+      `Write-Host '================================================' -ForegroundColor Cyan`,
+      `Write-Host ''`,
+      `Write-Host 'Task file content:' -ForegroundColor Gray`,
+      `Get-Content '${taskPath.replace(/'/g, "''")}' | Write-Host -ForegroundColor Gray`,
+    ].join('\n') + '\n', 'utf-8');
+    try {
+      spawn(config.terminalApp, ['-w', '0', 'new-tab', '--title', `Cursor: ${taskName}`, 'powershell.exe', '-NoExit', '-File', ps1Path], { detached: true, stdio: 'ignore', shell: false }).unref();
+    } catch {
+      spawn('powershell.exe', ['-NoExit', '-File', ps1Path], { detached: true, stdio: 'ignore', shell: false }).unref();
+    }
   }
 
   // Try to launch Cursor (non-blocking, failure is OK)
   try {
-    spawn(config.cursorCommand, [config.projectDir], {
-      detached: true, stdio: 'ignore', shell: false
-    }).unref();
+    spawn(config.cursorCommand, [config.projectDir], { detached: true, stdio: 'ignore', shell: false }).unref();
   } catch {
     // cursor not available, user can open manually
   }
@@ -177,7 +167,7 @@ function launchCursor(config: BridgeConfig, taskPath: string, taskName: string):
 
 // ─── MCP Server ───────────────────────────────────────────────────────────────
 const server = new Server(
-  { name: 'qwen-bridge', version: '2.0.0' },
+  { name: 'qwen-bridge', version: '3.0.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -186,9 +176,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'dispatch_to_qwen',
       description:
-        'Dispatch a task markdown file to Qwen Code for execution. ' +
-        'Opens a new Windows Terminal tab with Qwen Code, sends a Windows notification and speech alert. ' +
-        'Claude returns immediately — Qwen Code runs independently. ' +
+        'Dispatch a task markdown file to Qwen Code for background execution. ' +
+        'Qwen Code runs headless (no terminal window) in YOLO mode (auto-approve all actions). ' +
+        'Output is written to a _result.log file beside the task file. ' +
+        'Sends a Windows notification and speech alert. Claude returns immediately. ' +
         'Use this after writing a QWEN_*.md task file.',
       inputSchema: {
         type: 'object' as const,
@@ -212,9 +203,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       description:
         'Dispatch a task markdown file to Cursor AI for execution. ' +
         'Copies the task content to the Windows clipboard so you can paste it into Cursor AI chat with Ctrl+V. ' +
-        'Opens Cursor in the project directory and a terminal tab showing the task details. ' +
-        'Sends a Windows notification and speech alert. ' +
-        'Claude returns immediately — Cursor AI runs independently using its own tokens. ' +
+        'Optionally opens Cursor in the project directory and a terminal banner (if showTerminal is on). ' +
+        'Sends a Windows notification and speech alert. Claude returns immediately. ' +
         'Use this after writing a CURSOR_*.md task file.',
       inputSchema: {
         type: 'object' as const,
@@ -267,20 +257,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (config.notifyOnDispatch) sendWindowsNotification('Qwen Bridge', notifMsg);
     if (config.speechOnDispatch) sendSpeech(config.speechText);
-    launchQwenInTerminal(config, taskPath, taskName);
+    runQwen(config, taskPath, taskName);
 
+    const resultLog = taskPath.replace(/\.md$/, '_result.log');
     return {
       content: [{
         type: 'text' as const,
         text: [
           '✅ Dispatched to Qwen Code',
-          `   File    : ${taskPath}`,
-          `   Task    : ${notifMsg}`,
-          `   Command : ${config.qwenCommand}`,
+          `   File       : ${taskPath}`,
+          `   Task       : ${notifMsg}`,
+          `   YOLO mode  : ${config.yoloMode ? 'ON (auto-approve all actions)' : 'OFF'}`,
+          `   Terminal   : ${config.showTerminal ? 'visible' : 'headless (background)'}`,
+          `   Result log : ${resultLog}`,
           '',
-          'A new Windows Terminal tab has opened with Qwen Code.',
-          'Windows notification sent. Speech alert played.',
-          'Claude is free — Qwen Code is running independently.',
+          'Qwen Code is executing in the background with full auto-approval.',
+          'Check the result log for progress. Claude is free.',
         ].join('\n'),
       }],
     };
@@ -326,7 +318,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     // 3. Launch Cursor + show terminal banner
-    launchCursor(config, taskPath, taskName);
+    runCursor(config, taskPath, taskName, clipboardOk);
 
     return {
       content: [{
@@ -336,13 +328,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           `   File       : ${taskPath}`,
           `   Task       : ${notifMsg}`,
           `   Clipboard  : ${clipboardOk ? '✓ Task content copied (Ctrl+V into Cursor AI chat)' : '⚠ Copy failed — paste task file manually'}`,
-          `   Cursor cmd : ${config.cursorCommand}`,
+          `   Terminal   : ${config.showTerminal ? 'visible' : 'headless'}`,
           '',
-          'Next steps:',
-          '  1. Switch to Cursor (window should have opened)',
-          '  2. Open the Cursor AI chat (Ctrl+Shift+J or click the chat icon)',
-          '  3. Press Ctrl+V to paste the task — Cursor AI will execute it',
-          '',
+          clipboardOk
+            ? 'Task content is in your clipboard. Open Cursor AI chat and press Ctrl+V.'
+            : 'Open the task file manually in Cursor.',
           'Claude is free — Cursor AI runs independently using its own tokens.',
         ].join('\n'),
       }],
@@ -355,7 +345,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       content: [{
         type: 'text' as const,
         text: [
-          '✅ Agent Bridge is running (v2.0)',
+          '✅ Agent Bridge is running (v3.0)',
           '',
           'Current config:',
           `  projectDir      : ${config.projectDir}`,
@@ -364,6 +354,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           `  terminalApp     : ${config.terminalApp}`,
           `  notifyOnDispatch: ${config.notifyOnDispatch}`,
           `  speechOnDispatch: ${config.speechOnDispatch}`,
+          `  showTerminal    : ${config.showTerminal}`,
+          `  yoloMode        : ${config.yoloMode}`,
           '',
           'Available tools:',
           '  dispatch_to_qwen    — dispatch QWEN_*.md to Qwen Code',
