@@ -5,8 +5,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>AutoClaude — Plan with Claude. Execute Everywhere.</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL @100..700,0..1&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght @400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script id="tailwind-config">
 tailwind.config = {
   darkMode: "class",
@@ -112,7 +112,211 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+#lang-toggle {
+    min-width: 48px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+#lang-toggle:hover {
+    background: rgba(49, 168, 255, 0.1);
+    color: #31a8ff;
+}
 </style>
+
+<!-- i18n — AutoClaude Bilingual System -->
+<script>
+const I18N = {
+  en: {
+    nav_how: 'How It Works',
+    nav_agents: 'Agents',
+    nav_process: 'Process',
+    nav_savings: 'Savings',
+    nav_features: 'Features',
+    nav_docs: 'Docs',
+    nav_github: 'GitHub',
+    nav_start: 'Get Started',
+    hero_line1: 'Plan with Claude.',
+    hero_line2: 'Execute Everywhere.',
+    hero_sub: 'One Claude. Infinite execution. Zero token waste.',
+    hero_cta: 'Get Started',
+    hero_github: 'View on GitHub',
+    how_title: 'How It Works',
+    how_sub: 'Claude plans the strategy. AutoClaude dispatches tasks. Your chosen AI agent executes \u2014 all in the background, all automatic.',
+    how_step1_title: '1. Claude Plans',
+    how_step1_desc: 'Claude Code analyzes the problem, designs the architecture, and writes a detailed task file with step-by-step instructions.',
+    how_step2_title: '2. AutoClaude Dispatches',
+    how_step2_desc: 'With one MCP tool call, AutoClaude pipes the task to your chosen agent. Headless. Auto-approve. Instant.',
+    how_step3_title: '3. Agent Executes',
+    how_step3_desc: 'Your AI coding agent runs the task independently using its own token pool. Claude is free for the next planning session.',
+    process_title: 'Standardized Process',
+    process_sub: 'Every task produces a structured report. Clear role separation between Claude (planning) and agent (execution).',
+    process_tier_a: 'Strategy',
+    process_tier_b: 'Bridge',
+    process_tier_c: 'Execution',
+    process_claude: 'Claude Code',
+    process_claude_desc: 'Architecture design, task planning, code review, and final verification. Zero execution \u2014 planning only.',
+    process_ac: 'AutoClaude',
+    process_ac_desc: 'Validates tasks, dispatches to agents, captures output, generates standardized reports with cost tracking.',
+    process_agent: 'AI Agent',
+    process_agent_desc: 'File operations, git commits, builds, deployments. Autonomous execution with auto-approve.',
+    savings_title: 'Save <span class="text-gradient">60-80%</span> of Your Claude Tokens',
+    savings_sub: 'Every task dispatched through AutoClaude is automatically tracked. Claude only spends tokens on planning \u2014 your agent handles the heavy execution.',
+    savings_t1_title: '~7K',
+    savings_t1_desc: 'Claude tokens per task (planning only)',
+    savings_t2_title: '~25K',
+    savings_t2_desc: 'Equivalent tokens saved (vs. all-Claude execution)',
+    savings_t3_title: '~$0.30',
+    savings_t3_desc: 'Cost saved per task (Opus 4.7 pricing)',
+    savings_footer: 'Based on Claude Opus 4.7 API pricing (\$5.00/1M input, \$25.00/1M output). Actual savings vary by task complexity.',
+    agents_title: 'Choose Your Agent',
+    agents_sub: 'AutoClaude supports any terminal-invocable AI coding CLI. Pick the tool that matches your subscription plan.',
+    agents_custom: 'Custom',
+    agents_custom_desc: 'Your Tool',
+    agents_custom_hint: 'add_custom_agent',
+    agents_footer: "Don't see your tool? Use add_custom_agent in Claude to register any CLI tool.",
+    features_title: 'Features',
+    features_sub: 'Everything you need to multiply your coding throughput without multiplying your token costs.',
+    f1_title: 'Headless Background',
+    f1_desc: 'No terminal windows. No pop-ups. Your agent runs silently in the background while you keep working.',
+    f2_title: 'Auto-Approve',
+    f2_desc: 'Zero confirmation prompts. Your agent auto-approves all actions for fully autonomous execution.',
+    f3_title: 'Multi-Agent',
+    f3_desc: '7 built-in agents. Switch freely between Qwen Code, Gemini CLI, Codex, Aider, and more.',
+    f4_title: 'Clipboard Bridge',
+    f4_desc: 'GUI tools like Cursor are supported too. Task content copied to clipboard automatically.',
+    f5_title: 'Windows Native',
+    f5_desc: 'Toast notifications, speech synthesis, headless background spawn \u2014 built for Windows 10/11.',
+    f6_title: 'Token Tracking',
+    f6_desc: 'Automatic cost calculation per task. Cumulative savings report. Know exactly what you save.',
+    quote: '"The smartest way to code with AI isn\'t using one model for everything \u2014 it\'s using the right model for each job. Claude plans. Your agent executes. Everyone wins."',
+    getting_title: 'Getting Started',
+    getting_sub: 'Three commands to connect Claude Code to any AI coding CLI.',
+    step1_label: '# 1. Clone and install',
+    step2_label: '# 2. Add to Claude Code settings',
+    step3_label: '# 3. Restart Claude Code and dispatch',
+    footer_how: 'How It Works',
+    footer_process: 'Process',
+    footer_savings: 'Savings',
+    footer_features: 'Features',
+    footer_github: 'GitHub',
+    footer_docs: 'Docs',
+    footer_copyright: '\u00a9 2026 AutoClaude. Built with Claude Code + AI Coding Agents.',
+  },
+  zh: {
+    nav_how: '工作原理',
+    nav_agents: 'Agent',
+    nav_process: '流程',
+    nav_savings: '节省',
+    nav_features: '功能',
+    nav_docs: '文档',
+    nav_github: 'GitHub',
+    nav_start: '开始使用',
+    hero_line1: 'Claude 做规划。',
+    hero_line2: '任意 Agent 做执行。',
+    hero_sub: '一个 Claude。无限执行。零 Token 浪费。',
+    hero_cta: '开始使用',
+    hero_github: '在 GitHub 查看',
+    how_title: '工作原理',
+    how_sub: 'Claude 规划策略。AutoClaude 派发任务。你选择的 AI Agent 在后台静默执行 \u2014 全自动，零交互。',
+    how_step1_title: '1. Claude 规划',
+    how_step1_desc: 'Claude Code 分析问题，设计架构，编写详细的任务文件，包含分步执行指令。',
+    how_step2_title: '2. AutoClaude 派发',
+    how_step2_desc: '一次 MCP 工具调用，AutoClaude 将任务通过管道传给 Agent。后台静默，自动批准，即刻完成。',
+    how_step3_title: '3. Agent 执行',
+    how_step3_desc: 'AI Agent 使用自己的 Token 池独立执行任务。Claude 释放，继续下一个规划。',
+    process_title: '标准化流程',
+    process_sub: '每次任务生成结构化报告。Claude（规划）和 Agent（执行）角色清晰分离。',
+    process_tier_a: '战略层',
+    process_tier_b: '桥接层',
+    process_tier_c: '执行层',
+    process_claude: 'Claude Code',
+    process_claude_desc: '架构设计、任务规划、代码审查、最终验证。只做规划，不参与执行。',
+    process_ac: 'AutoClaude',
+    process_ac_desc: '验证任务、派发 Agent、捕获输出、生成标准化报告和成本追踪。',
+    process_agent: 'AI Agent',
+    process_agent_desc: '文件操作、Git 提交、构建部署。全自动执行，无需确认。',
+    savings_title: '节省 60-80% 的 Claude Token',
+    savings_sub: '每次派发自动追踪。Claude 只花 Token 做规划 \u2014 Agent 用自己的 Token 池处理繁重工作。',
+    savings_t1_title: '~7K',
+    savings_t1_desc: '每次任务 Claude Token 消耗（仅规划）',
+    savings_t2_title: '~25K',
+    savings_t2_desc: '等效节省 Token（对比全 Claude 执行）',
+    savings_t3_title: '~\$0.30',
+    savings_t3_desc: '每次任务节省成本（Opus 4.7 定价）',
+    savings_footer: '基于 Claude Opus 4.7 API 定价（\$5.00/1M 输入, \$25.00/1M 输出）。实际节省因任务复杂度而异。',
+    agents_title: '选择你的 Agent',
+    agents_sub: 'AutoClaude 支持任何可在终端调用的 AI 编程 CLI。选择匹配你订阅方案的工具。',
+    agents_custom: '自定义',
+    agents_custom_desc: '你的工具',
+    agents_custom_hint: 'add_custom_agent',
+    agents_footer: '找不到你的工具？在 Claude 中使用 add_custom_agent 注册任意 CLI 工具。',
+    features_title: '功能特性',
+    features_sub: '大幅提升编码吞吐量，同时不增加 Token 成本。',
+    f1_title: '后台静默',
+    f1_desc: '无终端窗口。无弹窗。Agent 在后台静默运行，不影响你的工作流。',
+    f2_title: '全自动执行',
+    f2_desc: '零确认提示。Agent 自动批准所有操作，实现完全自主执行。',
+    f3_title: '多 Agent 支持',
+    f3_desc: '7 个内置 Agent。自由切换 Qwen Code、Gemini CLI、Codex、Aider 等。',
+    f4_title: '剪贴板桥接',
+    f4_desc: 'GUI 工具如 Cursor 同样支持。任务内容自动复制到剪贴板。',
+    f5_title: 'Windows 原生',
+    f5_desc: 'Toast 通知、语音合成、后台静默启动 \u2014 专为 Windows 10/11 打造。',
+    f6_title: 'Token 追踪',
+    f6_desc: '每次任务自动计算成本。累计节省报告。清楚了解节省了多少。',
+    quote: '\u300cAI 编程最高效的方式不是用一个模型做所有事 \u2014 而是用对的模型做对的事。Claude 规划。Agent 执行。人人受益。\u300d',
+    getting_title: '快速开始',
+    getting_sub: '三行命令，将 Claude Code 连接到任意 AI 编程 CLI。',
+    step1_label: '# 1. 克隆并安装',
+    step2_label: '# 2. 添加到 Claude Code 设置',
+    step3_label: '# 3. 重启 Claude Code 并派发任务',
+    footer_how: '工作原理',
+    footer_process: '流程',
+    footer_savings: '节省',
+    footer_features: '功能',
+    footer_github: 'GitHub',
+    footer_docs: '文档',
+    footer_copyright: '\u00a9 2026 AutoClaude. Claude Code 规划 + AI Agent 执行。',
+  }
+};
+
+let currentLang = localStorage.getItem('autoclaude_lang') ||
+  (navigator.language.startsWith('zh') ? 'zh' : 'en');
+
+function t(key) {
+  return I18N[currentLang]?.[key] || I18N.en[key] || key;
+}
+
+function switchLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('autoclaude_lang', lang);
+  updateAllText();
+  updateLangToggle();
+}
+
+function updateLangToggle() {
+  const btn = document.getElementById('lang-toggle');
+  if (btn) btn.textContent = currentLang === 'zh' ? 'EN' : '中文';
+}
+
+function updateAllText() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const text = t(key);
+    if (text) el.innerHTML = text;
+  });
+  document.querySelectorAll('[data-i18n-nav]').forEach(el => {
+    const key = el.getAttribute('data-i18n-nav');
+    const text = t(key);
+    if (text) el.textContent = text;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateAllText();
+  updateLangToggle();
+});
+</script>
 </head>
 <body class="antialiased min-h-screen relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
 
@@ -124,15 +328,16 @@ body {
 <nav class="fixed top-0 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 flex items-center justify-between px-8 py-4 bg-white/20 backdrop-blur-[20px] rounded-2xl border border-white/20 mt-6 shadow-[0_20px_40px_rgba(15,23,42,0.08)]">
     <a class="text-2xl font-black tracking-tighter text-on-background" href="#">AutoClaude</a>
     <div class="hidden md:flex items-center gap-8 font-medium text-sm">
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#how-it-works">How It Works</a>
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#agents">Agents</a>
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#process">Process</a>
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#savings">Savings</a>
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#features">Features</a>
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude">GitHub</a>
-        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300 text-sm" href="https://github.com/zhewenzhang/AutoClaude/blob/main/README_CN.md">中文</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#how-it-works" data-i18n-nav="nav_how">How It Works</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#agents" data-i18n-nav="nav_agents">Agents</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#process" data-i18n-nav="nav_process">Process</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#savings" data-i18n-nav="nav_savings">Savings</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#features" data-i18n-nav="nav_features">Features</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude/tree/main/docs" target="_blank" data-i18n-nav="nav_docs">Docs</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude" data-i18n-nav="nav_github">GitHub</a>
+        <button id="lang-toggle" onclick="switchLang(currentLang === 'zh' ? 'en' : 'zh')" class="text-sm font-medium text-on-surface-variant hover:text-primary-container transition-all duration-300 px-3 py-1.5 rounded-lg hover:bg-white/10">中文</button>
     </div>
-    <a href="#getting-started" class="bg-primary-container text-on-primary px-6 py-2 rounded-lg font-medium hover:shadow-[0_0_15px_rgba(49,168,255,0.4)] transition-all duration-300 text-sm">Get Started</a>
+    <a href="#getting-started" class="bg-primary-container text-on-primary px-6 py-2 rounded-lg font-medium hover:shadow-[0_0_15px_rgba(49,168,255,0.4)] transition-all duration-300 text-sm" data-i18n-nav="nav_start">Get Started</a>
 </nav>
 
 <!-- Hero -->
@@ -143,15 +348,15 @@ body {
         <div class="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-secondary-container/20 rounded-full blur-3xl mix-blend-multiply"></div>
     </div>
     <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-on-background leading-none relative z-10 mb-6">
-        Plan with Claude.<br/><span class="text-gradient">Execute Everywhere.</span>
+        <span data-i18n="hero_line1">Plan with Claude.</span><br/><span class="text-gradient" data-i18n="hero_line2">Execute Everywhere.</span>
     </h1>
-    <p class="text-xl md:text-2xl text-on-surface-variant font-medium max-w-2xl mx-auto glass-panel px-8 py-4 rounded-full">
+    <p class="text-xl md:text-2xl text-on-surface-variant font-medium max-w-2xl mx-auto glass-panel px-8 py-4 rounded-full" data-i18n="hero_sub">
         One Claude. Infinite execution. Zero token waste.
     </p>
     <div class="flex gap-4 mt-8">
-        <a href="#getting-started" class="bg-primary-container text-on-primary px-8 py-3 rounded-xl font-semibold hover:shadow-[0_0_20px_rgba(49,168,255,0.5)] transition-all duration-300 text-lg">Get Started</a>
+        <a href="#getting-started" class="bg-primary-container text-on-primary px-8 py-3 rounded-xl font-semibold hover:shadow-[0_0_20px_rgba(49,168,255,0.5)] transition-all duration-300 text-lg" data-i18n="hero_cta">Get Started</a>
         <a href="https://github.com/zhewenzhang/AutoClaude" class="glass-panel px-8 py-3 rounded-xl font-semibold text-on-surface-variant hover:text-on-background transition-all duration-300 text-lg flex items-center gap-2">
-            <span class="material-symbols-outlined">code</span> View on GitHub
+            <span class="material-symbols-outlined">code</span> <span data-i18n="hero_github">View on GitHub</span>
         </a>
     </div>
 </section>
@@ -159,8 +364,8 @@ body {
 <!-- How It Works -->
 <section id="how-it-works" class="space-y-12">
     <div class="text-center space-y-4">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">How It Works</h2>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Claude plans the strategy. AutoClaude dispatches tasks. Qwen Code or Cursor executes them — all in the background, all automatic.</p>
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background" data-i18n="how_title">How It Works</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto" data-i18n="how_sub">Claude plans the strategy. AutoClaude dispatches tasks. Your chosen AI agent executes \u2014 all in the background, all automatic.</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- Step 1 -->
@@ -168,24 +373,24 @@ body {
             <div class="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-3xl text-primary-container">psychology</span>
             </div>
-            <h3 class="text-xl font-bold text-on-background">1. Claude Plans</h3>
-            <p class="text-sm text-on-surface-variant">Claude Code analyzes the problem, designs the architecture, and writes a detailed task file with step-by-step instructions.</p>
+            <h3 class="text-xl font-bold text-on-background" data-i18n="how_step1_title">1. Claude Plans</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="how_step1_desc">Claude Code analyzes the problem, designs the architecture, and writes a detailed task file with step-by-step instructions.</p>
         </div>
         <!-- Step 2 -->
         <div class="glass-card rounded-2xl p-8 text-center space-y-4 relative overflow-hidden lg:translate-y-8">
             <div class="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-3xl text-primary-container">send</span>
             </div>
-            <h3 class="text-xl font-bold text-on-background">2. AutoClaude Dispatches</h3>
-            <p class="text-sm text-on-surface-variant">With one MCP tool call, AutoClaude pipes the task to Qwen Code or copies it to Cursor. Headless. YOLO. Instant.</p>
+            <h3 class="text-xl font-bold text-on-background" data-i18n="how_step2_title">2. AutoClaude Dispatches</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="how_step2_desc">With one MCP tool call, AutoClaude pipes the task to your chosen agent. Headless. Auto-approve. Instant.</p>
         </div>
         <!-- Step 3 -->
         <div class="glass-card rounded-2xl p-8 text-center space-y-4 relative overflow-hidden">
             <div class="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-3xl text-primary-container">terminal</span>
             </div>
-            <h3 class="text-xl font-bold text-on-background">3. Agents Execute</h3>
-            <p class="text-sm text-on-surface-variant">Qwen Code or Cursor runs the task independently using their own tokens. Claude is free for the next planning session.</p>
+            <h3 class="text-xl font-bold text-on-background" data-i18n="how_step3_title">3. Agent Executes</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="how_step3_desc">Your AI coding agent runs the task independently using its own token pool. Claude is free for the next planning session.</p>
         </div>
     </div>
 </section>
@@ -193,8 +398,8 @@ body {
 <!-- Agent Showcase -->
 <section id="agents" class="space-y-12">
     <div class="text-center space-y-4">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">Choose Your Agent</h2>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">AutoClaude supports any terminal-invocable AI coding CLI. Pick the tool that matches your subscription plan.</p>
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background" data-i18n="agents_title">Choose Your Agent</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto" data-i18n="agents_sub">AutoClaude supports any terminal-invocable AI coding CLI. Pick the tool that matches your subscription plan.</p>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-primary-container">
@@ -241,9 +446,9 @@ body {
         </div>
         <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-slate-300 border-dashed">
             <span class="material-symbols-outlined text-3xl text-on-surface-variant">add_circle</span>
-            <h3 class="font-bold text-on-background">Custom</h3>
-            <span class="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-600">Your Tool</span>
-            <p class="text-xs text-on-surface-variant">add_custom_agent</p>
+            <h3 class="font-bold text-on-background" data-i18n="agents_custom">Custom</h3>
+            <span class="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-600" data-i18n="agents_custom_desc">Your Tool</span>
+            <p class="text-xs text-on-surface-variant" data-i18n="agents_custom_hint">add_custom_agent</p>
         </div>
     </div>
     <p class="text-center text-xs text-on-surface-variant">
@@ -254,35 +459,35 @@ body {
 <!-- Process Display -->
 <section id="process" class="space-y-12">
     <div class="text-center space-y-4">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">Standardized Process</h2>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Every task produces a structured report. Clear role separation between Claude (planning) and Qwen Code (execution).</p>
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background" data-i18n="process_title">Standardized Process</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto" data-i18n="process_sub">Every task produces a structured report. Clear role separation between Claude (planning) and agent (execution).</p>
     </div>
-    
+
     <!-- Role Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-primary-container">
             <div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-2xl text-primary-container">psychology</span>
             </div>
-            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container">Tier-A · Strategy</span>
-            <h3 class="text-xl font-bold text-on-background">Claude Code</h3>
-            <p class="text-sm text-on-surface-variant">Architecture design, task planning, code review, and final verification. Zero execution — planning only.</p>
+            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container" data-i18n="process_tier_a">Tier-A &middot; Strategy</span>
+            <h3 class="text-xl font-bold text-on-background" data-i18n="process_claude">Claude Code</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="process_claude_desc">Architecture design, task planning, code review, and final verification. Zero execution \u2014 planning only.</p>
         </div>
         <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-[#31a8ff]">
             <div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-2xl text-primary-container">send</span>
             </div>
-            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container">Bridge</span>
+            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container" data-i18n="process_tier_b">Bridge</span>
             <h3 class="text-xl font-bold text-on-background">AutoClaude</h3>
-            <p class="text-sm text-on-surface-variant">Validates tasks, dispatches to agents, captures output, generates standardized reports.</p>
+            <p class="text-sm text-on-surface-variant" data-i18n="process_ac_desc">Validates tasks, dispatches to agents, captures output, generates standardized reports with cost tracking.</p>
         </div>
         <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-green-400">
             <div class="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-2xl text-green-600">terminal</span>
             </div>
-            <span class="px-3 py-1 bg-green-50 rounded-full text-xs font-bold text-green-700">Tier-Exec · Execution</span>
-            <h3 class="text-xl font-bold text-on-background">Qwen Code</h3>
-            <p class="text-sm text-on-surface-variant">File operations, git commits, builds, deployments. Autonomous execution with YOLO mode.</p>
+            <span class="px-3 py-1 bg-green-50 rounded-full text-xs font-bold text-green-700" data-i18n="process_tier_c">Execution</span>
+            <h3 class="text-xl font-bold text-on-background" data-i18n="process_agent">AI Agent</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="process_agent_desc">File operations, git commits, builds, deployments. Autonomous execution with auto-approve.</p>
         </div>
     </div>
 
@@ -304,17 +509,17 @@ body {
             <div>&nbsp;</div>
             <div><span class="text-on-surface-variant">## Completion Checklist</span></div>
             <div>| Step | Role | Status |</div>
-            <div>| Architecture planning | <span style="color:#31a8ff">Claude</span> | ✅ |</div>
-            <div>| Task file authoring | <span style="color:#31a8ff">Claude</span> | ✅ |</div>
-            <div>| Task dispatch | <span style="color:#31a8ff">AutoClaude</span> | ✅ |</div>
-            <div>| Git repo initialization | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
-            <div>| README creation | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
-            <div>| Landing page (index.html) | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
-            <div>| GitHub Pages deploy | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
-            <div>| Final verification | <span style="color:#31a8ff">Claude</span> | ✅ |</div>
+            <div>| Architecture planning | <span style="color:#31a8ff">Claude</span> | \u2705 |</div>
+            <div>| Task file authoring | <span style="color:#31a8ff">Claude</span> | \u2705 |</div>
+            <div>| Task dispatch | <span style="color:#31a8ff">AutoClaude</span> | \u2705 |</div>
+            <div>| Git repo initialization | <span style="color:#16a34a">Qwen Code</span> | \u2705 |</div>
+            <div>| README creation | <span style="color:#16a34a">Qwen Code</span> | \u2705 |</div>
+            <div>| Landing page (index.html) | <span style="color:#16a34a">Qwen Code</span> | \u2705 |</div>
+            <div>| GitHub Pages deploy | <span style="color:#16a34a">Qwen Code</span> | \u2705 |</div>
+            <div>| Final verification | <span style="color:#31a8ff">Claude</span> | \u2705 |</div>
             <div>&nbsp;</div>
             <div><span class="text-on-surface-variant">## Completion Status</span></div>
-            <div>| Status | ✅ Completed |</div>
+            <div>| Status | \u2705 Completed |</div>
             <div>| Duration | 127s |</div>
         </div>
     </div>
@@ -324,28 +529,28 @@ body {
 <section id="savings" class="py-8">
     <div class="max-w-4xl mx-auto glass-card rounded-2xl p-8 md:p-12 text-center space-y-6">
         <span class="material-symbols-outlined text-4xl text-primary-container">savings</span>
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background" data-i18n="savings_title">
             Save <span class="text-gradient">60-80%</span> of Your Claude Tokens
         </h2>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">
-            Every task dispatched through AutoClaude is automatically tracked. Claude only spends tokens on planning — Qwen Code handles the heavy execution using its own token pool.
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto" data-i18n="savings_sub">
+            Every task dispatched through AutoClaude is automatically tracked. Claude only spends tokens on planning \u2014 your agent handles the heavy execution.
         </p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
             <div class="glass-card rounded-xl p-6 space-y-2">
-                <div class="text-3xl font-black text-primary-container">~7K</div>
-                <div class="text-sm text-on-surface-variant">Claude tokens per task<br/>(planning only)</div>
+                <div class="text-3xl font-black text-primary-container" data-i18n="savings_t1_title">~7K</div>
+                <div class="text-sm text-on-surface-variant" data-i18n="savings_t1_desc">Claude tokens per task (planning only)</div>
             </div>
             <div class="glass-card rounded-xl p-6 space-y-2">
-                <div class="text-3xl font-black text-green-500">~25K</div>
-                <div class="text-sm text-on-surface-variant">Equivalent tokens saved<br/>(vs. all-Claude execution)</div>
+                <div class="text-3xl font-black text-green-500" data-i18n="savings_t2_title">~25K</div>
+                <div class="text-sm text-on-surface-variant" data-i18n="savings_t2_desc">Equivalent tokens saved (vs. all-Claude execution)</div>
             </div>
             <div class="glass-card rounded-xl p-6 space-y-2">
-                <div class="text-3xl font-black text-primary-container">~$0.30</div>
-                <div class="text-sm text-on-surface-variant">Cost saved per task<br/>(Opus 4.7 pricing)</div>
+                <div class="text-3xl font-black text-primary-container" data-i18n="savings_t3_title">~$0.30</div>
+                <div class="text-sm text-on-surface-variant" data-i18n="savings_t3_desc">Cost saved per task (Opus 4.7 pricing)</div>
             </div>
         </div>
-        <p class="text-xs text-on-surface-variant pt-4">
-            Based on Claude Opus 4.7 API pricing ($5.00/1M input, $25.00/1M output). Actual savings vary by task complexity.
+        <p class="text-xs text-on-surface-variant pt-4" data-i18n="savings_footer">
+            Based on Claude Opus 4.7 API pricing (\$5.00/1M input, \$25.00/1M output). Actual savings vary by task complexity.
         </p>
     </div>
 </section>
@@ -353,39 +558,39 @@ body {
 <!-- Features -->
 <section id="features" class="space-y-12">
     <div class="text-center space-y-4">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">Features</h2>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Everything you need to multiply your coding throughput without multiplying your token costs.</p>
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background" data-i18n="features_title">Features</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto" data-i18n="features_sub">Everything you need to multiply your coding throughput without multiplying your token costs.</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">visibility_off</span>
-            <h3 class="text-lg font-bold text-on-background">Headless Background</h3>
-            <p class="text-sm text-on-surface-variant">No terminal windows. No pop-ups. Qwen Code runs silently in the background while you keep working.</p>
+            <h3 class="text-lg font-bold text-on-background" data-i18n="f1_title">Headless Background</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="f1_desc">No terminal windows. No pop-ups. Your agent runs silently in the background while you keep working.</p>
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">bolt</span>
-            <h3 class="text-lg font-bold text-on-background">YOLO Auto-Approve</h3>
-            <p class="text-sm text-on-surface-variant">Zero confirmation prompts. Qwen Code auto-approves all actions so execution is fully autonomous.</p>
+            <h3 class="text-lg font-bold text-on-background" data-i18n="f2_title">Auto-Approve</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="f2_desc">Zero confirmation prompts. Your agent auto-approves all actions for fully autonomous execution.</p>
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">hub</span>
-            <h3 class="text-lg font-bold text-on-background">Multi-Agent (v5.0)</h3>
-            <p class="text-sm text-on-surface-variant">Dispatch to Qwen Code, Gemini CLI, Codex CLI, Aider, OpenCode, Cline, or Cursor. Switch agents on the fly with one command.</p>
+            <h3 class="text-lg font-bold text-on-background" data-i18n="f3_title">Multi-Agent</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="f3_desc">7 built-in agents. Switch freely between Qwen Code, Gemini CLI, Codex, Aider, and more.</p>
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">content_copy</span>
-            <h3 class="text-lg font-bold text-on-background">Clipboard Bridge</h3>
-            <p class="text-sm text-on-surface-variant">Cursor tasks are copied to clipboard automatically. Just open Cursor AI chat and paste (Ctrl+V).</p>
+            <h3 class="text-lg font-bold text-on-background" data-i18n="f4_title">Clipboard Bridge</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="f4_desc">GUI tools like Cursor are supported too. Task content copied to clipboard automatically.</p>
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">captive_portal</span>
-            <h3 class="text-lg font-bold text-on-background">Windows Native</h3>
-            <p class="text-sm text-on-surface-variant">Toast notifications, speech synthesis, Windows Terminal integration — built for Windows 10/11.</p>
+            <h3 class="text-lg font-bold text-on-background" data-i18n="f5_title">Windows Native</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="f5_desc">Toast notifications, speech synthesis, headless background spawn \u2014 built for Windows 10/11.</p>
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">savings</span>
-            <h3 class="text-lg font-bold text-on-background">Token Saving</h3>
-            <p class="text-sm text-on-surface-variant">Claude tokens are for planning, not heavy implementation. Save 60-80% on token costs.</p>
+            <h3 class="text-lg font-bold text-on-background" data-i18n="f6_title">Token Tracking</h3>
+            <p class="text-sm text-on-surface-variant" data-i18n="f6_desc">Automatic cost calculation per task. Cumulative savings report. Know exactly what you save.</p>
         </div>
     </div>
 </section>
@@ -394,8 +599,8 @@ body {
 <section class="py-16 relative flex items-center justify-center">
     <div class="text-center max-w-4xl px-4 space-y-8 relative z-10">
         <span class="material-symbols-outlined text-6xl text-primary/30 mx-auto block mb-6">format_quote</span>
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight leading-tight text-gradient">
-            "The smartest way to code with AI isn't using one model for everything — it's using the right model for each job. Claude plans. Qwen executes. Everyone wins."
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight leading-tight text-gradient" data-i18n="quote">
+            "The smartest way to code with AI isn't using one model for everything \u2014 it's using the right model for each job. Claude plans. Your agent executes. Everyone wins."
         </h2>
     </div>
 </section>
@@ -403,17 +608,17 @@ body {
 <!-- Getting Started -->
 <section id="getting-started" class="space-y-12">
     <div class="text-center space-y-4">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">Getting Started</h2>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Three commands to connect Claude Code to Qwen Code and Cursor.</p>
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background" data-i18n="getting_title">Getting Started</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto" data-i18n="getting_sub">Three commands to connect Claude Code to any AI coding CLI.</p>
     </div>
     <div class="max-w-2xl mx-auto glass-card rounded-2xl p-8 space-y-4">
         <div class="bg-surface-container-low rounded-xl p-4 font-mono text-sm text-on-surface overflow-x-auto">
-            <span class="text-on-surface-variant"># 1. Clone and install</span><br/>
+            <span class="text-on-surface-variant" data-i18n="step1_label"># 1. Clone and install</span><br/>
             git clone https://github.com/zhewenzhang/AutoClaude.git<br/>
             cd AutoClaude && npm install && npm run build
         </div>
         <div class="bg-surface-container-low rounded-xl p-4 font-mono text-sm text-on-surface overflow-x-auto">
-            <span class="text-on-surface-variant"># 2. Add to Claude Code settings</span><br/>
+            <span class="text-on-surface-variant" data-i18n="step2_label"># 2. Add to Claude Code settings</span><br/>
             <span class="text-on-surface-variant">// In ~/.claude/settings.json:</span><br/>
             "mcpServers": {<br/>
             &nbsp;&nbsp;"autoclaude": {<br/>
@@ -423,8 +628,8 @@ body {
             }
         </div>
         <div class="bg-surface-container-low rounded-xl p-4 font-mono text-sm text-on-surface overflow-x-auto">
-            <span class="text-on-surface-variant"># 3. Restart Claude Code and dispatch your first task</span><br/>
-            Claude: Write QWEN_MY_TASK.md, then dispatch_to_qwen("QWEN_MY_TASK.md")
+            <span class="text-on-surface-variant" data-i18n="step3_label"># 3. Restart Claude Code and dispatch</span><br/>
+            Claude: Write a task file, then dispatch_task("TASK.md")
         </div>
     </div>
 </section>
@@ -434,14 +639,14 @@ body {
 <footer class="relative w-full px-12 py-24 flex flex-col items-center justify-center overflow-hidden bg-white/5 backdrop-blur-[12px] rounded-t-[40px] border-t border-white/10 mt-20 shadow-[0_-10px_50px_rgba(0,0,0,0.05)]">
     <div class="text-[10rem] md:text-[12rem] font-black opacity-5 absolute bottom-0 left-0 pointer-events-none select-none uppercase text-primary-container">AutoClaude</div>
     <div class="flex gap-8 mb-8 z-10 text-sm">
-        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#how-it-works">How It Works</a>
-        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#process">Process</a>
-        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#savings">Savings</a>
-        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#features">Features</a>
-        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude">GitHub</a>
-        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://modelcontextprotocol.io">MCP</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#how-it-works" data-i18n-nav="footer_how">How It Works</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#process" data-i18n-nav="footer_process">Process</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#savings" data-i18n-nav="footer_savings">Savings</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#features" data-i18n-nav="footer_features">Features</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude" data-i18n-nav="footer_github">GitHub</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude/tree/main/docs" target="_blank" data-i18n-nav="footer_docs">Docs</a>
     </div>
-    <p class="text-slate-500 text-sm z-10">© 2026 AutoClaude v5.0. Built with Claude Code + Qwen Code + Gemini CLI + Codex CLI + Aider + Cursor.</p>
+    <p class="text-slate-500 text-sm z-10" data-i18n="footer_copyright">&copy; 2026 AutoClaude. Built with Claude Code + AI Coding Agents.</p>
 </footer>
 </body>
 </html>
