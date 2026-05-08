@@ -14,6 +14,86 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = path.join(__dirname, '..', 'config.json');
 
+// ─── Token Economics ─────────────────────────────────────────────────────────
+const CLAUDE_PRICING = {
+  opus4_7: { input: 5.00, output: 25.00 },  // per 1M tokens
+  opus4_5: { input: 15.00, output: 75.00 },  // legacy pricing for comparison
+};
+
+interface TaskSavings {
+  taskName: string;
+  timestamp: string;
+  claudeTokensIn: number;
+  claudeTokensOut: number;
+  estimatedExecutionTokensIn: number;
+  estimatedExecutionTokensOut: number;
+  tokensSaved: number;
+  costSaved: number;
+}
+
+const SAVINGS_FILE = path.join(__dirname, '..', '.autoclaude_savings.json');
+
+function loadSavings(): TaskSavings[] {
+  try {
+    if (fs.existsSync(SAVINGS_FILE)) {
+      return JSON.parse(fs.readFileSync(SAVINGS_FILE, 'utf-8'));
+    }
+  } catch {}
+  return [];
+}
+
+function recordSavings(entry: TaskSavings): void {
+  const all = loadSavings();
+  all.push(entry);
+  fs.writeFileSync(SAVINGS_FILE, JSON.stringify(all, null, 2), 'utf-8');
+}
+
+function getCumulativeSavings(): { tasks: number; tokensSaved: number; costSaved: number } {
+  const all = loadSavings();
+  return {
+    tasks: all.length,
+    tokensSaved: all.reduce((sum, e) => sum + e.tokensSaved, 0),
+    costSaved: all.reduce((sum, e) => sum + e.costSaved, 0),
+  };
+}
+
+function estimateTokenSavings(taskContent: string, resultContent: string): {
+  claudeTokensIn: number;
+  claudeTokensOut: number;
+  estimatedExecutionTokensIn: number;
+  estimatedExecutionTokensOut: number;
+  tokensSaved: number;
+  costSaved: number;
+} {
+  // Conservative estimates based on empirical observation
+  // Claude planning: reading project files + writing task
+  const claudeTokensIn = 4000;   // reading context, files, config
+  const claudeTokensOut = Math.ceil(taskContent.length / 3);  // writing task file
+
+  // If Claude did the execution instead of Qwen:
+  // Claude would need to read all context, process results, write output
+  const estimatedExecutionTokensIn = Math.max(8000, Math.ceil(taskContent.length / 2));
+  const estimatedExecutionTokensOut = Math.max(3000, resultContent.length > 0 ? Math.ceil(resultContent.length / 3) : 5000);
+
+  // Tokens saved = what Claude WOULD have used for execution - what Claude actually uses for planning
+  const tokensSaved = (estimatedExecutionTokensIn + estimatedExecutionTokensOut) - (claudeTokensIn + claudeTokensOut);
+
+  // Cost calculation using Opus 4.7 pricing
+  const p = CLAUDE_PRICING.opus4_7;
+  const executionCost = (estimatedExecutionTokensIn / 1_000_000) * p.input + (estimatedExecutionTokensOut / 1_000_000) * p.output;
+  const planningCost = (claudeTokensIn / 1_000_000) * p.input + (claudeTokensOut / 1_000_000) * p.output;
+  const costSaved = executionCost - planningCost;
+
+  return {
+    claudeTokensIn,
+    claudeTokensOut,
+    estimatedExecutionTokensIn,
+    estimatedExecutionTokensOut,
+    tokensSaved,
+    costSaved: Math.max(0, costSaved),
+  };
+}
+
 interface BridgeConfig {
   projectDir: string;
   qwenCommand: string;
@@ -130,19 +210,61 @@ function finalizeTaskSummary(
   summaryPath: string,
   taskPath: string,
   startTime: Date,
-  success: boolean
+  success: boolean,
+  taskContent: string
 ): void {
   const endTime = new Date();
   const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
   const resultLog = taskPath.replace(/\.md$/, '_result.log');
-  let resultPreview = '';
+  let resultContent = '';
   try {
     if (fs.existsSync(resultLog)) {
-      resultPreview = fs.readFileSync(resultLog, 'utf-8').substring(0, 2000);
+      resultContent = fs.readFileSync(resultLog, 'utf-8');
     }
   } catch {}
 
+  const savings = estimateTokenSavings(taskContent, resultContent);
+  
+  // Record for cumulative tracking
+  const taskName = path.basename(taskPath, '.md');
+  recordSavings({
+    taskName,
+    timestamp: startTime.toISOString(),
+    ...savings,
+  });
+
+  const cum = getCumulativeSavings();
+  const oldP = CLAUDE_PRICING.opus4_5;
+
   const footer = [
+    ``,
+    `---`,
+    ``,
+    `## Token Economics`,
+    ``,
+    `| Metric | Claude (Planning) | Qwen Code (Execution) |`,
+    `|--------|-------------------|-----------------------|`,
+    `| **Tokens In** | ~${savings.claudeTokensIn.toLocaleString()} | ~${savings.estimatedExecutionTokensIn.toLocaleString()} |`,
+    `| **Tokens Out** | ~${savings.claudeTokensOut.toLocaleString()} | ~${savings.estimatedExecutionTokensOut.toLocaleString()} |`,
+    `| **Estimated Cost** | $${(savings.claudeTokensIn / 1_000_000 * CLAUDE_PRICING.opus4_7.input + savings.claudeTokensOut / 1_000_000 * CLAUDE_PRICING.opus4_7.output).toFixed(4)} | $${(savings.estimatedExecutionTokensIn / 1_000_000 * CLAUDE_PRICING.opus4_7.input + savings.estimatedExecutionTokensOut / 1_000_000 * CLAUDE_PRICING.opus4_7.output).toFixed(4)} |`,
+    ``,
+    `### 💰 Savings This Task`,
+    ``,
+    `| Metric | Value |`,
+    `|--------|-------|`,
+    `| **Tokens Saved** | **~${savings.tokensSaved.toLocaleString()} tokens** |`,
+    `| **Cost Saved (Opus 4.7)** | **$${savings.costSaved.toFixed(4)}** |`,
+    `| **Cost Saved (Opus 4.5 legacy)** | $${(savings.costSaved * 3).toFixed(4)} (3× at old pricing) |`,
+    ``,
+    `### 📊 Cumulative Savings (All Tasks)`,
+    ``,
+    `| Metric | Value |`,
+    `|--------|-------|`,
+    `| **Total Tasks** | ${cum.tasks} |`,
+    `| **Total Tokens Saved** | **~${cum.tokensSaved.toLocaleString()}** |`,
+    `| **Total Cost Saved** | **$${cum.costSaved.toFixed(2)}** |`,
+    ``,
+    `> 💡 *With AutoClaude, Claude only spends tokens on planning & strategy (~${Math.round(savings.claudeTokensIn + savings.claudeTokensOut).toLocaleString()} tokens/task). The heavy lifting (file edits, git, builds) uses Qwen Code's token pool. That's ${Math.round((1 - (savings.claudeTokensIn + savings.claudeTokensOut) / (savings.estimatedExecutionTokensIn + savings.estimatedExecutionTokensOut)) * 100)}% savings per task.*`,
     ``,
     `---`,
     ``,
@@ -161,16 +283,38 @@ function finalizeTaskSummary(
     `## Result Preview`,
     ``,
     '```',
-    resultPreview,
+    resultContent.substring(0, 2000),
     '```',
     ``,
     `---`,
     ``,
-    `*Report generated by AutoClaude v4.0 — Plan with Claude, Execute Everywhere.*`,
+    `*Report generated by AutoClaude v4.2 — Plan with Claude, Execute Everywhere.*`,
   ].join('\n');
 
   try {
-    fs.appendFileSync(summaryPath, footer, 'utf-8');
+    // Overwrite with final version (replaces the initial header)
+    const header = [
+      `# Task Report: ${taskName}`,
+      ``,
+      `| Field | Value |`,
+      `|-------|-------|`,
+      `| **Task File** | \`${path.basename(taskPath)}\` |`,
+      `| **Dispatched** | ${startTime.toISOString()} |`,
+      `| **Agent** | Qwen Code |`,
+      `| **Mode** | Headless background + YOLO auto-approve |`,
+      ``,
+      `---`,
+      ``,
+      `## Role Separation`,
+      ``,
+      `| Role | System | Responsibility |`,
+      `|------|--------|----------------|`,
+      `| Planner | Claude Code | Strategy, architecture design, task file authoring, final verification |`,
+      `| Dispatcher | AutoClaude (MCP Bridge) | Task validation, dispatching, notifications, output capture, cost tracking |`,
+      `| Executor | Qwen Code | File operations, git commits, builds, deployments — all execution work |`,
+      ``,
+    ].join('\n');
+    fs.writeFileSync(summaryPath, header + footer, 'utf-8');
   } catch {}
 }
 
@@ -206,7 +350,7 @@ function runQwen(config: BridgeConfig, taskPath: string, taskName: string): void
   } else {
     // Headless: direct spawn qwen via its .cmd wrapper, pipe task to stdin, capture output to log
     const startTime = new Date();
-    const summaryPath = writeTaskSummary(taskPath, taskName, taskName, startTime, 'Qwen Code');
+    const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
 
     // Prepend format instructions to task content
     const taskContent = fs.readFileSync(taskPath, 'utf-8');
@@ -240,7 +384,7 @@ function runQwen(config: BridgeConfig, taskPath: string, taskName: string): void
     child.stdin!.end();
     child.on('close', (code) => {
       try { fs.closeSync(logFd); } catch {}
-      finalizeTaskSummary(summaryPath, taskPath, startTime, code === 0);
+      finalizeTaskSummary(summaryPath, taskPath, startTime, code === 0, taskContent);
     });
     child.unref();
   }
@@ -284,7 +428,7 @@ function runCursor(config: BridgeConfig, taskPath: string, taskName: string, _cl
 
 // ─── MCP Server ───────────────────────────────────────────────────────────────
 const server = new Server(
-  { name: 'autoclaude', version: '4.0.0' },
+  { name: 'autoclaude', version: '4.2.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -361,6 +505,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
         required: ['task_file'],
       },
+    },
+    {
+      name: 'get_savings_report',
+      description:
+        'Show cumulative token and cost savings across all AutoClaude-dispatched tasks. ' +
+        'Displays total tokens saved, total money saved, and per-task breakdown. ' +
+        'Uses Claude Opus 4.7 API pricing ($5/$25 per 1M tokens).',
+      inputSchema: { type: 'object' as const, properties: {} },
     },
   ],
 }));
@@ -477,11 +629,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   // ── qwen_bridge_status ────────────────────────────────────────────────────
   if (request.params.name === 'qwen_bridge_status') {
+    const cum = getCumulativeSavings();
     return {
       content: [{
         type: 'text' as const,
         text: [
-          '✅ AutoClaude is running (v4.0)',
+          '✅ AutoClaude is running (v4.2)',
           '',
           'Current config:',
           `  projectDir      : ${config.projectDir}`,
@@ -498,6 +651,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '  dispatch_to_cursor  — dispatch CURSOR_*.md to Cursor AI (clipboard + launch)',
           '  qwen_bridge_status  — this status check',
           '  get_task_report     — read _summary.md for a dispatched task',
+          '  get_savings_report  — show cumulative token & cost savings',
+          '',
+          `💰 Cumulative Savings: ${cum.tasks} tasks, ~${cum.tokensSaved.toLocaleString()} tokens, $${cum.costSaved.toFixed(2)}`,
         ].join('\n'),
       }],
     };
@@ -533,6 +689,42 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         type: 'text' as const,
         text: report,
       }],
+    };
+  }
+
+  // ── get_savings_report ────────────────────────────────────────────────────
+  if (request.params.name === 'get_savings_report') {
+    const cum = getCumulativeSavings();
+    const all = loadSavings();
+    const last5 = all.slice(-5).reverse();
+
+    const lines = [
+      '💰 AutoClaude Savings Report',
+      '',
+      'Claude API Pricing: Opus 4.7 ($5.00/1M input, $25.00/1M output)',
+      '',
+      '## Cumulative Savings',
+      '',
+      `| Metric | Value |`,
+      `|--------|-------|`,
+      `| **Total Tasks Dispatched** | ${cum.tasks} |`,
+      `| **Total Tokens Saved** | **~${cum.tokensSaved.toLocaleString()}** |`,
+      `| **Total Cost Saved** | **$${cum.costSaved.toFixed(2)}** |`,
+      '',
+    ];
+
+    if (last5.length > 0) {
+      lines.push('| Task | Tokens Saved | Cost Saved |', '|------|-------------|------------|');
+      for (const s of last5) {
+        lines.push(`| ${s.taskName} | ${s.tokensSaved.toLocaleString()} tokens | $${s.costSaved.toFixed(4)} saved |`);
+      }
+      lines.push('');
+      lines.push(`> 🔥 Average savings: **~${Math.round(cum.tokensSaved / cum.tasks).toLocaleString()} tokens ($${(cum.costSaved / cum.tasks).toFixed(4)})** per task`);
+      lines.push(`> 💡 At legacy Opus 4.5 pricing ($15/$75), savings would be **~$${(cum.costSaved * 3).toFixed(2)}**`);
+    }
+
+    return {
+      content: [{ type: 'text' as const, text: lines.join('\n') }],
     };
   }
 

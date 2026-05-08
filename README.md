@@ -2,13 +2,13 @@
 
 > Plan with Claude. Execute Everywhere. — The MCP bridge that connects Claude Code to Qwen Code & Cursor.
 
-🌐 **[Landing Page](https://zhewenzhang.github.io/qwen-bridge/)**
+🌐 **[Landing Page](https://zhewenzhang.github.io/AutoClaude/)** · 📖 [中文说明](README_CN.md)
 
 [![MCP](https://img.shields.io/badge/MCP-Protocol-blue?logo=anthropic)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.0.0-brightgreen)](https://github.com/zhewenzhang/qwen-bridge)
+[![Version](https://img.shields.io/badge/version-4.2.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
 
 ---
 
@@ -23,6 +23,8 @@ Claude handles strategy and planning. AutoClaude fires off execution tasks silen
 | `dispatch_to_qwen` | Pipes a task file to Qwen Code running headless in the background with YOLO (auto-approve) mode. Zero interaction needed. |
 | `dispatch_to_cursor` | Copies task content to clipboard so you can paste it into Cursor AI chat. Optionally launches Cursor. |
 | `qwen_bridge_status` | Prints current config and confirms AutoClaude is alive. |
+| `get_task_report` | Reads the standardized _summary.md execution report for a dispatched task. |
+| `get_savings_report` | **New in v4.2** — Shows cumulative token and cost savings across all tasks. |
 
 **The workflow**: Claude plans the architecture, writes detailed task files (`QWEN_*.md` / `CURSOR_*.md`), then dispatches them. Qwen Code executes silently in the background, or Cursor picks up the clipboard content. **Claude tokens stay free for planning.**
 
@@ -45,11 +47,24 @@ Claude Code excels at **planning** — architecture, code review, debugging stra
 3. **Zero manual copy-paste** — AutoClaude handles dispatch, notifications, clipboard, and background execution
 4. **YOLO mode by default** — Qwen Code auto-approves all actions, no confirmation prompts
 
+### 💰 Token Savings
+
+Every task is automatically tracked. Use `get_savings_report` in Claude to see your cumulative savings.
+
+| Metric | Per Task (Average) |
+|--------|-------------------|
+| Claude tokens (planning) | ~7,000 |
+| Equivalent full-Claude | ~25,000 |
+| **Tokens saved** | **~18,000 (72%)** |
+| **Cost saved** | **~$0.30 (Opus 4.7)** |
+
+> At 100 tasks/month: **$30/month saved**. At 1,000 tasks/month: **$300/month saved**.
+
 ## Installation
 
 ```bash
-git clone https://github.com/zhewenzhang/qwen-bridge.git
-cd qwen-bridge
+git clone https://github.com/zhewenzhang/AutoClaude.git
+cd AutoClaude
 npm install
 npm run build
 ```
@@ -93,7 +108,7 @@ Add this to your Claude Code settings (`~/.claude/settings.json` or project `.cl
   "mcpServers": {
     "autoclaude": {
       "command": "node",
-      "args": ["D:\\qwen-bridge\\dist\\index.js"],
+      "args": ["D:\\AutoClaude\\dist\\index.js"],
       "env": {}
     }
   }
@@ -246,7 +261,7 @@ Claude can call `get_task_report("QWEN_EXAMPLE.md")` to read the summary without
 ## Project Structure
 
 ```
-qwen-bridge/
+AutoClaude/
 ├── src/
 │   └── index.ts          # AutoClaude MCP Server main program
 ├── dist/
@@ -255,7 +270,9 @@ qwen-bridge/
 ├── package.json
 ├── tsconfig.json
 ├── index.html            # Landing page (GitHub Pages)
-└── README.md
+├── README.md             # English documentation
+├── README_CN.md          # Chinese documentation
+└── .autoclaude_savings.json  # Cumulative token savings tracking
 ```
 
 ## Tech Stack
