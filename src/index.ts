@@ -351,6 +351,7 @@ function runQwen(config: BridgeConfig, taskPath: string, taskName: string): void
     // Headless: direct spawn qwen via its .cmd wrapper, pipe task to stdin, capture output to log
     const startTime = new Date();
     const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
+    writeTaskSummary(taskPath, taskName, taskName, startTime, 'Qwen Code');
 
     // Prepend format instructions to task content
     const taskContent = fs.readFileSync(taskPath, 'utf-8');
@@ -375,18 +376,25 @@ function runQwen(config: BridgeConfig, taskPath: string, taskName: string): void
     ].join('\n');
     const fullContent = formatInstruction + taskContent;
 
-    const logFd = fs.openSync(resultLog, 'w');
-    const child = spawn(config.qwenCommand, args, {
-      stdio: ['pipe', logFd, logFd],
-      shell: true,
-    });
-    child.stdin!.write(fullContent);
-    child.stdin!.end();
-    child.on('close', (code) => {
-      try { fs.closeSync(logFd); } catch {}
-      finalizeTaskSummary(summaryPath, taskPath, startTime, code === 0, taskContent);
-    });
-    child.unref();
+    // Write task + format instructions to a temp file (avoids stdin pipe issues)
+    const tmpTaskFile = path.join(os.tmpdir(), `_ac_task_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.txt`);
+    fs.writeFileSync(tmpTaskFile, fullContent, 'utf-8');
+
+    // Write a .bat file that survives parent process exit and captures output reliably
+    const batFile = path.join(os.tmpdir(), `_ac_run_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.bat`);
+    const batContent = [
+      '@echo off',
+      `cd /d "${config.projectDir}"`,
+      `type "${tmpTaskFile}" | ${config.qwenCommand} -y --output-format text > "${resultLog}" 2>&1`,
+    ].join('\r\n') + '\r\n';
+    fs.writeFileSync(batFile, batContent);
+
+    // Use cmd.exe start /min to launch independently (survives MCP server restart/exit)
+    spawn('cmd.exe', ['/c', 'start', '/min', '', batFile], {
+      detached: true,
+      stdio: 'ignore',
+      shell: false,
+    }).unref();
   }
 }
 
@@ -666,6 +674,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       ? task_file
       : path.join(config.projectDir, task_file);
     const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
+    const resultLog = taskPath.replace(/\.md$/, '_result.log');
+
+    // Auto-finalize: if result log exists and summary hasn't been finalized yet
+    if (fs.existsSync(summaryPath) && fs.existsSync(resultLog)) {
+      const summary = fs.readFileSync(summaryPath, 'utf-8');
+      const hasResult = fs.statSync(resultLog).size > 0;
+      if (hasResult && !summary.includes('Token Economics')) {
+        // Auto-finalize the summary now that execution is complete
+        try {
+          const taskContent = fs.existsSync(taskPath) ? fs.readFileSync(taskPath, 'utf-8') : '';
+          finalizeTaskSummary(summaryPath, taskPath, new Date(), true, taskContent);
+        } catch {}
+      }
+    }
 
     if (!fs.existsSync(summaryPath)) {
       return {
@@ -677,7 +699,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             `Expected at: ${summaryPath}`,
             '',
             'The task may still be running, or no summary was generated.',
-            `Check if _result.log exists: ${fs.existsSync(taskPath.replace(/\.md$/, '_result.log')) ? 'Yes' : 'No'}`,
+            `Check if _result.log exists: ${fs.existsSync(resultLog) ? 'Yes' : 'No'}`,
           ].join('\n'),
         }],
       };
