@@ -126,6 +126,7 @@ body {
     <div class="hidden md:flex items-center gap-8 font-medium text-sm">
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#features">Features</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#how-it-works">How It Works</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#process">Process</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/qwen-bridge">Docs</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/qwen-bridge">GitHub</a>
     </div>
@@ -183,6 +184,75 @@ body {
             </div>
             <h3 class="text-xl font-bold text-on-background">3. Agents Execute</h3>
             <p class="text-sm text-on-surface-variant">Qwen Code or Cursor runs the task independently using their own tokens. Claude is free for the next planning session.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Process Display -->
+<section id="process" class="space-y-12">
+    <div class="text-center space-y-4">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">Standardized Process</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Every task produces a structured report. Clear role separation between Claude (planning) and Qwen Code (execution).</p>
+    </div>
+    
+    <!-- Role Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-primary-container">
+            <div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center mx-auto">
+                <span class="material-symbols-outlined text-2xl text-primary-container">psychology</span>
+            </div>
+            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container">Tier-A · Strategy</span>
+            <h3 class="text-xl font-bold text-on-background">Claude Code</h3>
+            <p class="text-sm text-on-surface-variant">Architecture design, task planning, code review, and final verification. Zero execution — planning only.</p>
+        </div>
+        <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-[#31a8ff]">
+            <div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center mx-auto">
+                <span class="material-symbols-outlined text-2xl text-primary-container">send</span>
+            </div>
+            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container">Bridge</span>
+            <h3 class="text-xl font-bold text-on-background">AutoClaude</h3>
+            <p class="text-sm text-on-surface-variant">Validates tasks, dispatches to agents, captures output, generates standardized reports.</p>
+        </div>
+        <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-green-400">
+            <div class="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mx-auto">
+                <span class="material-symbols-outlined text-2xl text-green-600">terminal</span>
+            </div>
+            <span class="px-3 py-1 bg-green-50 rounded-full text-xs font-bold text-green-700">Tier-Exec · Execution</span>
+            <h3 class="text-xl font-bold text-on-background">Qwen Code</h3>
+            <p class="text-sm text-on-surface-variant">File operations, git commits, builds, deployments. Autonomous execution with YOLO mode.</p>
+        </div>
+    </div>
+
+    <!-- Sample Report Display -->
+    <div class="max-w-4xl mx-auto glass-card rounded-2xl p-8 overflow-hidden">
+        <div class="flex items-center gap-3 mb-6">
+            <span class="w-3 h-3 rounded-full bg-red-400"></span>
+            <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+            <span class="w-3 h-3 rounded-full bg-green-400"></span>
+            <span class="text-xs text-on-surface-variant ml-2 font-mono">QWEN_GITHUB_SETUP_summary.md</span>
+        </div>
+        <div class="bg-surface-container-low rounded-xl p-6 font-mono text-xs leading-relaxed text-on-surface overflow-x-auto space-y-1">
+            <div><span class="text-on-surface-variant"># Task Report: QWEN_GITHUB_SETUP</span></div>
+            <div>&nbsp;</div>
+            <div><span class="text-on-surface-variant">## Role Separation</span></div>
+            <div>| <strong>Planner</strong> | Claude Code | Strategy, architecture, task authoring |</div>
+            <div>| <strong>Dispatcher</strong> | AutoClaude | Validation, dispatch, output capture |</div>
+            <div>| <strong>Executor</strong> | Qwen Code | git init, files, build, deploy |</div>
+            <div>&nbsp;</div>
+            <div><span class="text-on-surface-variant">## Completion Checklist</span></div>
+            <div>| Step | Role | Status |</div>
+            <div>| Architecture planning | <span style="color:#31a8ff">Claude</span> | ✅ |</div>
+            <div>| Task file authoring | <span style="color:#31a8ff">Claude</span> | ✅ |</div>
+            <div>| Task dispatch | <span style="color:#31a8ff">AutoClaude</span> | ✅ |</div>
+            <div>| Git repo initialization | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
+            <div>| README creation | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
+            <div>| Landing page (index.html) | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
+            <div>| GitHub Pages deploy | <span style="color:#16a34a">Qwen Code</span> | ✅ |</div>
+            <div>| Final verification | <span style="color:#31a8ff">Claude</span> | ✅ |</div>
+            <div>&nbsp;</div>
+            <div><span class="text-on-surface-variant">## Completion Status</span></div>
+            <div>| Status | ✅ Completed |</div>
+            <div>| Duration | 127s |</div>
         </div>
     </div>
 </section>
@@ -273,6 +343,7 @@ body {
     <div class="flex gap-8 mb-8 z-10 text-sm">
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#features">Features</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#how-it-works">How It Works</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#process">Process</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/qwen-bridge">GitHub</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://modelcontextprotocol.io">MCP</a>
     </div>

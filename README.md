@@ -142,6 +142,71 @@ Claude: Check if AutoClaude is running
 
 Claude calls `qwen_bridge_status` and reports back the config and available tools.
 
+## Standardized Output
+
+Every task dispatched by AutoClaude produces two files:
+
+| File | Content |
+|------|---------|
+| `TASK_NAME_result.log` | Raw execution output from the agent |
+| `TASK_NAME_summary.md` | Structured process report with role separation |
+
+### Process Report Format
+
+The `_summary.md` follows a fixed structure:
+
+```markdown
+# Task Report: <task_name>
+
+| Field | Value |
+|-------|-------|
+| **Task File** | `QWEN_EXAMPLE.md` |
+| **Dispatched** | 2026-05-08T14:30:00.000Z |
+| **Agent** | Qwen Code |
+| **Mode** | Headless background + YOLO auto-approve |
+
+---
+
+## Role Separation
+
+| Role | System | Responsibility |
+|------|--------|----------------|
+| Planner | Claude Code | Strategy, architecture, task authoring, verification |
+| Dispatcher | AutoClaude | Task validation, dispatch, notification, output capture |
+| Executor | Qwen Code | File operations, git, builds, deployments |
+
+---
+
+## Execution Log
+(Raw agent output...)
+
+---
+
+## Completion Status
+
+| Metric | Value |
+|--------|-------|
+| **Status** | ✅ Completed |
+| **Duration** | 127s |
+
+## Completion Checklist
+
+| Step | Role | Status |
+|------|------|--------|
+| Architecture planning | Claude | ✅ |
+| Task file authoring | Claude | ✅ |
+| Dispatch | AutoClaude | ✅ |
+| git init & config | Qwen Code | ✅ |
+| File creation & editing | Qwen Code | ✅ |
+| Build & test | Qwen Code | ✅ |
+| Commit & push | Qwen Code | ✅ |
+| Verification | Claude | ✅ |
+```
+
+### Reading Reports via MCP
+
+Claude can call `get_task_report("QWEN_EXAMPLE.md")` to read the summary without opening files manually. Use `qwen_bridge_status` to confirm the bridge is running.
+
 ## How the Dispatch Works (Under the Hood)
 
 ### Qwen Code (v4.0 headless)
