@@ -314,7 +314,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       sendWindowsNotification('Cursor Bridge', notifMsg + (clipboardOk ? ' — Content in clipboard' : ''));
     }
     if (config.speechOnDispatch) {
-      sendSpeech('Cursor task ready' + (clipboardOk ? ', content in clipboard' : ''));
+      sendSpeech(config.speechText + (clipboardOk ? ' — content in clipboard' : ''));
     }
 
     // 3. Launch Cursor + show terminal banner

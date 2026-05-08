@@ -1,3 +1,49 @@
+# Task: Polish Qwen Bridge v3.0 — Update User-Facing Text & GitHub README
+
+## Context
+The bridge was just upgraded to v3.0 (headless background + YOLO mode). Several text surfaces still describe the old v2.0 behavior (terminal tabs). You need to update all user-facing text to reflect v3.0 reality.
+
+## Step 1: Update `config.json`
+
+Change `speechText` to be more generic (supports both Qwen and Cursor):
+
+```json
+{
+  "projectDir": "D:\\qwen-bridge",
+  "qwenCommand": "qwen",
+  "cursorCommand": "cursor",
+  "terminalApp": "wt.exe",
+  "notifyOnDispatch": true,
+  "speechOnDispatch": true,
+  "speechText": "Bridge task dispatched",
+  "showTerminal": false,
+  "yoloMode": true
+}
+```
+
+The change: `"Qwen task dispatched"` → `"Bridge task dispatched"`
+
+## Step 2: Update `src/index.ts` — speech for cursor dispatch
+
+At line 317, change the hardcoded cursor speech text to use the config's `speechText` field:
+
+Current:
+```typescript
+sendSpeech('Cursor task ready' + (clipboardOk ? ', content in clipboard' : ''));
+```
+
+Replace with:
+```typescript
+if (config.speechOnDispatch) sendSpeech(config.speechText + (clipboardOk ? ' — content in clipboard' : ''));
+```
+
+This makes the cursor speech consistent with the config settings, just like the qwen dispatch does.
+
+## Step 3: Rewrite `README.md` to reflect v3.0 behavior
+
+Replace the ENTIRE README.md content with this polished v3.0 version:
+
+```markdown
 # Qwen Bridge
 
 > Seamlessly connect Claude Code to external coding agents. Plan with Claude, execute with Qwen Code or Cursor — save tokens, ship faster.
@@ -217,8 +263,31 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node dist/index.js
 
 ## Author
 
-Created by [ @zhewenzhang](https://github.com/zhewenzhang)
+Created by [@zhewenzhang](https://github.com/zhewenzhang)
 
 ## License
 
 MIT
+```
+
+Make sure to REPLACE the entire file, not append. The old README is ~194 lines; the new one should completely replace it.
+
+## Step 4: Rebuild TypeScript
+
+```bash
+cd D:\qwen-bridge
+npx tsc
+```
+
+## Step 5: Commit and Push
+
+```bash
+cd D:\qwen-bridge
+git add -A
+git commit -m "v3.0 polish: update README, speech text, and user-facing messages for headless + YOLO mode"
+git push origin main
+```
+
+## Step 6: Verify
+
+After pushing, verify by checking `git log --oneline -1` to confirm the commit exists.
