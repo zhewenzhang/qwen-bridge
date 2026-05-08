@@ -1,0 +1,9 @@
+{
+  "projectDir": "D:\\qwen-bridge",
+  "qwenCommand": "qwen",
+  "cursorCommand": "cursor",
+  "terminalApp": "wt.exe",
+  "notifyOnDispatch": true,
+  "speechOnDispatch": true,
+  "speechText": "Qwen task dispatched"
+}
