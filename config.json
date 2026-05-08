@@ -1,17 +1,19 @@
 {
-  "projectDir": "D:\\qwen-bridge",
-  "activeAgent": "qwen",
+  "terminalApp": "wt.exe",
+  "notifyOnDispatch": true,
   "speechOnDispatch": true,
   "speechText": "AutoClaude task dispatched",
-  "showTerminal": false,
+  "activeAgent": "qwen",
   "agents": {
     "qwen": {
       "name": "Qwen Code",
       "command": "qwen",
       "type": "cli",
       "yoloFlag": "-y",
+      "yoloMode": true,
       "outputFlag": "--output-format text",
       "installHint": "npm install -g @qwen-code/qwen-code",
+      "showTerminal": false,
       "enabled": true
     },
     "gemini": {
@@ -19,8 +21,10 @@
       "command": "gemini",
       "type": "cli",
       "yoloFlag": "--yolo",
+      "yoloMode": true,
       "outputFlag": "",
       "installHint": "npm install -g @google/gemini-cli",
+      "showTerminal": false,
       "enabled": false
     },
     "codex": {
@@ -28,8 +32,10 @@
       "command": "codex",
       "type": "cli",
       "yoloFlag": "--approval-mode yolo",
+      "yoloMode": true,
       "outputFlag": "",
       "installHint": "npm install -g @openai/codex",
+      "showTerminal": false,
       "enabled": false
     },
     "aider": {
@@ -37,8 +43,10 @@
       "command": "aider",
       "type": "cli",
       "yoloFlag": "--yes",
+      "yoloMode": true,
       "outputFlag": "",
       "installHint": "pip install aider-chat",
+      "showTerminal": false,
       "enabled": false
     },
     "opencode": {
@@ -46,8 +54,10 @@
       "command": "opencode",
       "type": "cli",
       "yoloFlag": "-y",
+      "yoloMode": true,
       "outputFlag": "",
       "installHint": "npm install -g @opencode-ai/cli",
+      "showTerminal": false,
       "enabled": false
     },
     "cline": {
@@ -55,8 +65,10 @@
       "command": "cline",
       "type": "cli",
       "yoloFlag": "-y",
+      "yoloMode": true,
       "outputFlag": "",
       "installHint": "npm install -g @cline/cli",
+      "showTerminal": false,
       "enabled": false
     },
     "cursor": {
@@ -64,9 +76,13 @@
       "command": "cursor",
       "type": "clipboard",
       "yoloFlag": "",
+      "yoloMode": false,
       "outputFlag": "",
       "installHint": "https://cursor.com",
+      "showTerminal": false,
       "enabled": false
     }
-  }
+  },
+  "projectDir": "D:\\qwen-bridge",
+  "showTerminal": false
 }
