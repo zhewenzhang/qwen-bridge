@@ -123,200 +123,7 @@ body {
 }
 </style>
 
-<!-- i18n — AutoClaude Bilingual System -->
-<script>
-const I18N = {
-  en: {
-    nav_how: 'How It Works',
-    nav_agents: 'Agents',
-    nav_process: 'Process',
-    nav_savings: 'Savings',
-    nav_features: 'Features',
-    nav_docs: 'Docs',
-    nav_github: 'GitHub',
-    nav_start: 'Get Started',
-    hero_line1: 'Plan with Claude.',
-    hero_line2: 'Execute Everywhere.',
-    hero_sub: 'One Claude. Infinite execution. Zero token waste.',
-    hero_cta: 'Get Started',
-    hero_github: 'View on GitHub',
-    how_title: 'How It Works',
-    how_sub: 'Claude plans the strategy. AutoClaude dispatches tasks. Your chosen AI agent executes \u2014 all in the background, all automatic.',
-    how_step1_title: '1. Claude Plans',
-    how_step1_desc: 'Claude Code analyzes the problem, designs the architecture, and writes a detailed task file with step-by-step instructions.',
-    how_step2_title: '2. AutoClaude Dispatches',
-    how_step2_desc: 'With one MCP tool call, AutoClaude pipes the task to your chosen agent. Headless. Auto-approve. Instant.',
-    how_step3_title: '3. Agent Executes',
-    how_step3_desc: 'Your AI coding agent runs the task independently using its own token pool. Claude is free for the next planning session.',
-    process_title: 'Standardized Process',
-    process_sub: 'Every task produces a structured report. Clear role separation between Claude (planning) and agent (execution).',
-    process_tier_a: 'Strategy',
-    process_tier_b: 'Bridge',
-    process_tier_c: 'Execution',
-    process_claude: 'Claude Code',
-    process_claude_desc: 'Architecture design, task planning, code review, and final verification. Zero execution \u2014 planning only.',
-    process_ac: 'AutoClaude',
-    process_ac_desc: 'Validates tasks, dispatches to agents, captures output, generates standardized reports with cost tracking.',
-    process_agent: 'AI Agent',
-    process_agent_desc: 'File operations, git commits, builds, deployments. Autonomous execution with auto-approve.',
-    savings_title: 'Save <span class="text-gradient">60-80%</span> of Your Claude Tokens',
-    savings_sub: 'Every task dispatched through AutoClaude is automatically tracked. Claude only spends tokens on planning \u2014 your agent handles the heavy execution.',
-    savings_t1_title: '~7K',
-    savings_t1_desc: 'Claude tokens per task (planning only)',
-    savings_t2_title: '~25K',
-    savings_t2_desc: 'Equivalent tokens saved (vs. all-Claude execution)',
-    savings_t3_title: '~$0.30',
-    savings_t3_desc: 'Cost saved per task (Opus 4.7 pricing)',
-    savings_footer: 'Based on Claude Opus 4.7 API pricing (\$5.00/1M input, \$25.00/1M output). Actual savings vary by task complexity.',
-    agents_title: 'Choose Your Agent',
-    agents_sub: 'AutoClaude supports any terminal-invocable AI coding CLI. Pick the tool that matches your subscription plan.',
-    agents_custom: 'Custom',
-    agents_custom_desc: 'Your Tool',
-    agents_custom_hint: 'add_custom_agent',
-    agents_footer: "Don't see your tool? Use add_custom_agent in Claude to register any CLI tool.",
-    features_title: 'Features',
-    features_sub: 'Everything you need to multiply your coding throughput without multiplying your token costs.',
-    f1_title: 'Headless Background',
-    f1_desc: 'No terminal windows. No pop-ups. Your agent runs silently in the background while you keep working.',
-    f2_title: 'Auto-Approve',
-    f2_desc: 'Zero confirmation prompts. Your agent auto-approves all actions for fully autonomous execution.',
-    f3_title: 'Multi-Agent',
-    f3_desc: '7 built-in agents. Switch freely between Qwen Code, Gemini CLI, Codex, Aider, and more.',
-    f4_title: 'Clipboard Bridge',
-    f4_desc: 'GUI tools like Cursor are supported too. Task content copied to clipboard automatically.',
-    f5_title: 'Windows Native',
-    f5_desc: 'Toast notifications, speech synthesis, headless background spawn \u2014 built for Windows 10/11.',
-    f6_title: 'Token Tracking',
-    f6_desc: 'Automatic cost calculation per task. Cumulative savings report. Know exactly what you save.',
-    quote: '"The smartest way to code with AI isn\'t using one model for everything \u2014 it\'s using the right model for each job. Claude plans. Your agent executes. Everyone wins."',
-    getting_title: 'Getting Started',
-    getting_sub: 'Three commands to connect Claude Code to any AI coding CLI.',
-    step1_label: '# 1. Clone and install',
-    step2_label: '# 2. Add to Claude Code settings',
-    step3_label: '# 3. Restart Claude Code and dispatch',
-    footer_how: 'How It Works',
-    footer_process: 'Process',
-    footer_savings: 'Savings',
-    footer_features: 'Features',
-    footer_github: 'GitHub',
-    footer_docs: 'Docs',
-    footer_copyright: '\u00a9 2026 AutoClaude. Built with Claude Code + AI Coding Agents.',
-  },
-  zh: {
-    nav_how: '工作原理',
-    nav_agents: 'Agent',
-    nav_process: '流程',
-    nav_savings: '节省',
-    nav_features: '功能',
-    nav_docs: '文档',
-    nav_github: 'GitHub',
-    nav_start: '开始使用',
-    hero_line1: 'Claude 做规划。',
-    hero_line2: '任意 Agent 做执行。',
-    hero_sub: '一个 Claude。无限执行。零 Token 浪费。',
-    hero_cta: '开始使用',
-    hero_github: '在 GitHub 查看',
-    how_title: '工作原理',
-    how_sub: 'Claude 规划策略。AutoClaude 派发任务。你选择的 AI Agent 在后台静默执行 \u2014 全自动，零交互。',
-    how_step1_title: '1. Claude 规划',
-    how_step1_desc: 'Claude Code 分析问题，设计架构，编写详细的任务文件，包含分步执行指令。',
-    how_step2_title: '2. AutoClaude 派发',
-    how_step2_desc: '一次 MCP 工具调用，AutoClaude 将任务通过管道传给 Agent。后台静默，自动批准，即刻完成。',
-    how_step3_title: '3. Agent 执行',
-    how_step3_desc: 'AI Agent 使用自己的 Token 池独立执行任务。Claude 释放，继续下一个规划。',
-    process_title: '标准化流程',
-    process_sub: '每次任务生成结构化报告。Claude（规划）和 Agent（执行）角色清晰分离。',
-    process_tier_a: '战略层',
-    process_tier_b: '桥接层',
-    process_tier_c: '执行层',
-    process_claude: 'Claude Code',
-    process_claude_desc: '架构设计、任务规划、代码审查、最终验证。只做规划，不参与执行。',
-    process_ac: 'AutoClaude',
-    process_ac_desc: '验证任务、派发 Agent、捕获输出、生成标准化报告和成本追踪。',
-    process_agent: 'AI Agent',
-    process_agent_desc: '文件操作、Git 提交、构建部署。全自动执行，无需确认。',
-    savings_title: '节省 60-80% 的 Claude Token',
-    savings_sub: '每次派发自动追踪。Claude 只花 Token 做规划 \u2014 Agent 用自己的 Token 池处理繁重工作。',
-    savings_t1_title: '~7K',
-    savings_t1_desc: '每次任务 Claude Token 消耗（仅规划）',
-    savings_t2_title: '~25K',
-    savings_t2_desc: '等效节省 Token（对比全 Claude 执行）',
-    savings_t3_title: '~\$0.30',
-    savings_t3_desc: '每次任务节省成本（Opus 4.7 定价）',
-    savings_footer: '基于 Claude Opus 4.7 API 定价（\$5.00/1M 输入, \$25.00/1M 输出）。实际节省因任务复杂度而异。',
-    agents_title: '选择你的 Agent',
-    agents_sub: 'AutoClaude 支持任何可在终端调用的 AI 编程 CLI。选择匹配你订阅方案的工具。',
-    agents_custom: '自定义',
-    agents_custom_desc: '你的工具',
-    agents_custom_hint: 'add_custom_agent',
-    agents_footer: '找不到你的工具？在 Claude 中使用 add_custom_agent 注册任意 CLI 工具。',
-    features_title: '功能特性',
-    features_sub: '大幅提升编码吞吐量，同时不增加 Token 成本。',
-    f1_title: '后台静默',
-    f1_desc: '无终端窗口。无弹窗。Agent 在后台静默运行，不影响你的工作流。',
-    f2_title: '全自动执行',
-    f2_desc: '零确认提示。Agent 自动批准所有操作，实现完全自主执行。',
-    f3_title: '多 Agent 支持',
-    f3_desc: '7 个内置 Agent。自由切换 Qwen Code、Gemini CLI、Codex、Aider 等。',
-    f4_title: '剪贴板桥接',
-    f4_desc: 'GUI 工具如 Cursor 同样支持。任务内容自动复制到剪贴板。',
-    f5_title: 'Windows 原生',
-    f5_desc: 'Toast 通知、语音合成、后台静默启动 \u2014 专为 Windows 10/11 打造。',
-    f6_title: 'Token 追踪',
-    f6_desc: '每次任务自动计算成本。累计节省报告。清楚了解节省了多少。',
-    quote: '\u300cAI 编程最高效的方式不是用一个模型做所有事 \u2014 而是用对的模型做对的事。Claude 规划。Agent 执行。人人受益。\u300d',
-    getting_title: '快速开始',
-    getting_sub: '三行命令，将 Claude Code 连接到任意 AI 编程 CLI。',
-    step1_label: '# 1. 克隆并安装',
-    step2_label: '# 2. 添加到 Claude Code 设置',
-    step3_label: '# 3. 重启 Claude Code 并派发任务',
-    footer_how: '工作原理',
-    footer_process: '流程',
-    footer_savings: '节省',
-    footer_features: '功能',
-    footer_github: 'GitHub',
-    footer_docs: '文档',
-    footer_copyright: '\u00a9 2026 AutoClaude. Claude Code 规划 + AI Agent 执行。',
-  }
-};
-
-let currentLang = localStorage.getItem('autoclaude_lang') ||
-  (navigator.language.startsWith('zh') ? 'zh' : 'en');
-
-function t(key) {
-  return I18N[currentLang]?.[key] || I18N.en[key] || key;
-}
-
-function switchLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('autoclaude_lang', lang);
-  updateAllText();
-  updateLangToggle();
-}
-
-function updateLangToggle() {
-  const btn = document.getElementById('lang-toggle');
-  if (btn) btn.textContent = currentLang === 'zh' ? 'EN' : '中文';
-}
-
-function updateAllText() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    const text = t(key);
-    if (text) el.innerHTML = text;
-  });
-  document.querySelectorAll('[data-i18n-nav]').forEach(el => {
-    const key = el.getAttribute('data-i18n-nav');
-    const text = t(key);
-    if (text) el.textContent = text;
-  });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateAllText();
-  updateLangToggle();
-});
-</script>
+<script src="i18n.js"></script>
 </head>
 <body class="antialiased min-h-screen relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
 
@@ -451,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="text-xs text-on-surface-variant" data-i18n="agents_custom_hint">add_custom_agent</p>
         </div>
     </div>
-    <p class="text-center text-xs text-on-surface-variant">
+    <p class="text-center text-xs text-on-surface-variant" data-i18n="agents_footer">
         Don't see your tool? Use <code class="bg-surface-container px-2 py-0.5 rounded">add_custom_agent</code> in Claude to register any CLI tool.
     </p>
 </section>
@@ -469,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-2xl text-primary-container">psychology</span>
             </div>
-            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container" data-i18n="process_tier_a">Tier-A &middot; Strategy</span>
+            <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container" data-i18n="process_tier_a">Strategy</span>
             <h3 class="text-xl font-bold text-on-background" data-i18n="process_claude">Claude Code</h3>
             <p class="text-sm text-on-surface-variant" data-i18n="process_claude_desc">Architecture design, task planning, code review, and final verification. Zero execution \u2014 planning only.</p>
         </div>
@@ -478,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="material-symbols-outlined text-2xl text-primary-container">send</span>
             </div>
             <span class="px-3 py-1 bg-primary-container/10 rounded-full text-xs font-bold text-primary-container" data-i18n="process_tier_b">Bridge</span>
-            <h3 class="text-xl font-bold text-on-background">AutoClaude</h3>
+            <h3 class="text-xl font-bold text-on-background" data-i18n="process_ac">AutoClaude</h3>
             <p class="text-sm text-on-surface-variant" data-i18n="process_ac_desc">Validates tasks, dispatches to agents, captures output, generates standardized reports with cost tracking.</p>
         </div>
         <div class="glass-card rounded-2xl p-8 text-center space-y-4 border-t-4 border-t-green-400">
