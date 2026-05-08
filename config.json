@@ -1,11 +1,72 @@
 {
   "projectDir": "D:\\qwen-bridge",
-  "qwenCommand": "qwen",
-  "cursorCommand": "cursor",
-  "terminalApp": "wt.exe",
-  "notifyOnDispatch": true,
+  "activeAgent": "qwen",
   "speechOnDispatch": true,
   "speechText": "AutoClaude task dispatched",
   "showTerminal": false,
-  "yoloMode": true
+  "agents": {
+    "qwen": {
+      "name": "Qwen Code",
+      "command": "qwen",
+      "type": "cli",
+      "yoloFlag": "-y",
+      "outputFlag": "--output-format text",
+      "installHint": "npm install -g @qwen-code/qwen-code",
+      "enabled": true
+    },
+    "gemini": {
+      "name": "Gemini CLI",
+      "command": "gemini",
+      "type": "cli",
+      "yoloFlag": "--yolo",
+      "outputFlag": "",
+      "installHint": "npm install -g @google/gemini-cli",
+      "enabled": false
+    },
+    "codex": {
+      "name": "Codex CLI",
+      "command": "codex",
+      "type": "cli",
+      "yoloFlag": "--approval-mode yolo",
+      "outputFlag": "",
+      "installHint": "npm install -g @openai/codex",
+      "enabled": false
+    },
+    "aider": {
+      "name": "Aider",
+      "command": "aider",
+      "type": "cli",
+      "yoloFlag": "--yes",
+      "outputFlag": "",
+      "installHint": "pip install aider-chat",
+      "enabled": false
+    },
+    "opencode": {
+      "name": "OpenCode",
+      "command": "opencode",
+      "type": "cli",
+      "yoloFlag": "-y",
+      "outputFlag": "",
+      "installHint": "npm install -g @opencode-ai/cli",
+      "enabled": false
+    },
+    "cline": {
+      "name": "Cline CLI",
+      "command": "cline",
+      "type": "cli",
+      "yoloFlag": "-y",
+      "outputFlag": "",
+      "installHint": "npm install -g @cline/cli",
+      "enabled": false
+    },
+    "cursor": {
+      "name": "Cursor AI",
+      "command": "cursor",
+      "type": "clipboard",
+      "yoloFlag": "",
+      "outputFlag": "",
+      "installHint": "https://cursor.com",
+      "enabled": false
+    }
+  }
 }

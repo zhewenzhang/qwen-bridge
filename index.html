@@ -125,6 +125,7 @@ body {
     <a class="text-2xl font-black tracking-tighter text-on-background" href="#">AutoClaude</a>
     <div class="hidden md:flex items-center gap-8 font-medium text-sm">
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#how-it-works">How It Works</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#agents">Agents</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#process">Process</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#savings">Savings</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#features">Features</a>
@@ -187,6 +188,67 @@ body {
             <p class="text-sm text-on-surface-variant">Qwen Code or Cursor runs the task independently using their own tokens. Claude is free for the next planning session.</p>
         </div>
     </div>
+</section>
+
+<!-- Agent Showcase -->
+<section id="agents" class="space-y-12">
+    <div class="text-center space-y-4">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight text-on-background">Choose Your Agent</h2>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">AutoClaude supports any terminal-invocable AI coding CLI. Pick the tool that matches your subscription plan.</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-primary-container">
+            <div class="text-2xl font-black text-primary-container">QW</div>
+            <h3 class="font-bold text-on-background">Qwen Code</h3>
+            <span class="text-xs px-2 py-1 bg-primary-container/10 rounded-full text-primary-container">CLI</span>
+            <p class="text-xs text-on-surface-variant">Alibaba / OpenRouter</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-blue-400">
+            <div class="text-2xl font-black text-blue-500">GM</div>
+            <h3 class="font-bold text-on-background">Gemini CLI</h3>
+            <span class="text-xs px-2 py-1 bg-blue-50 rounded-full text-blue-600">CLI Free Tier</span>
+            <p class="text-xs text-on-surface-variant">Google 1M context</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-green-400">
+            <div class="text-2xl font-black text-green-500">CX</div>
+            <h3 class="font-bold text-on-background">Codex CLI</h3>
+            <span class="text-xs px-2 py-1 bg-green-50 rounded-full text-green-600">CLI OpenAI</span>
+            <p class="text-xs text-on-surface-variant">OpenAI Apache 2.0</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-orange-400">
+            <div class="text-2xl font-black text-orange-500">AI</div>
+            <h3 class="font-bold text-on-background">Aider</h3>
+            <span class="text-xs px-2 py-1 bg-orange-50 rounded-full text-orange-600">CLI BYO Key</span>
+            <p class="text-xs text-on-surface-variant">Multi-model Git native</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-purple-400">
+            <div class="text-2xl font-black text-purple-500">OC</div>
+            <h3 class="font-bold text-on-background">OpenCode</h3>
+            <span class="text-xs px-2 py-1 bg-purple-50 rounded-full text-purple-600">CLI 75+ Models</span>
+            <p class="text-xs text-on-surface-variant">Privacy-first</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-pink-400">
+            <div class="text-2xl font-black text-pink-500">CL</div>
+            <h3 class="font-bold text-on-background">Cline CLI</h3>
+            <span class="text-xs px-2 py-1 bg-pink-50 rounded-full text-pink-600">CLI Agnostic</span>
+            <p class="text-xs text-on-surface-variant">Model-agnostic</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-gray-400">
+            <div class="text-2xl font-black text-gray-500">CS</div>
+            <h3 class="font-bold text-on-background">Cursor AI</h3>
+            <span class="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">Clipboard</span>
+            <p class="text-xs text-on-surface-variant">GUI Manual paste</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center space-y-3 border-t-4 border-t-slate-300 border-dashed">
+            <span class="material-symbols-outlined text-3xl text-on-surface-variant">add_circle</span>
+            <h3 class="font-bold text-on-background">Custom</h3>
+            <span class="text-xs px-2 py-1 bg-slate-100 rounded-full text-slate-600">Your Tool</span>
+            <p class="text-xs text-on-surface-variant">add_custom_agent</p>
+        </div>
+    </div>
+    <p class="text-center text-xs text-on-surface-variant">
+        Don't see your tool? Use <code class="bg-surface-container px-2 py-0.5 rounded">add_custom_agent</code> in Claude to register any CLI tool.
+    </p>
 </section>
 
 <!-- Process Display -->
@@ -307,8 +369,8 @@ body {
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">hub</span>
-            <h3 class="text-lg font-bold text-on-background">Multi-Agent Support</h3>
-            <p class="text-sm text-on-surface-variant">Dispatch to Qwen Code and Cursor from the same bridge. Each agent uses its own token pool.</p>
+            <h3 class="text-lg font-bold text-on-background">Multi-Agent (v5.0)</h3>
+            <p class="text-sm text-on-surface-variant">Dispatch to Qwen Code, Gemini CLI, Codex CLI, Aider, OpenCode, Cline, or Cursor. Switch agents on the fly with one command.</p>
         </div>
         <div class="glass-card rounded-2xl p-6 space-y-3">
             <span class="material-symbols-outlined text-2xl text-primary-container">content_copy</span>
@@ -379,7 +441,7 @@ body {
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude">GitHub</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://modelcontextprotocol.io">MCP</a>
     </div>
-    <p class="text-slate-500 text-sm z-10">© 2026 AutoClaude. Built with Claude Code + Qwen Code + Cursor.</p>
+    <p class="text-slate-500 text-sm z-10">© 2026 AutoClaude v5.0. Built with Claude Code + Qwen Code + Gemini CLI + Codex CLI + Aider + Cursor.</p>
 </footer>
 </body>
 </html>

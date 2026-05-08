@@ -8,7 +8,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.2.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
+[![Version](https://img.shields.io/badge/version-5.0.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
 
 ---
 
@@ -20,13 +20,51 @@ Claude handles strategy and planning. AutoClaude fires off execution tasks silen
 
 | Tool | What it does |
 |------|-------------|
-| `dispatch_to_qwen` | Pipes a task file to Qwen Code running headless in the background with YOLO (auto-approve) mode. Zero interaction needed. |
+| `dispatch_to_qwen` | Pipes a task file to the active CLI agent running headless in the background with YOLO (auto-approve) mode. Zero interaction needed. |
+| `dispatch_task` | Unified dispatch to the active agent. |
+| `list_agents` | Show all available agents. |
+| `switch_agent` | Switch the active agent. |
+| `add_custom_agent` | Register a custom CLI tool. |
 | `dispatch_to_cursor` | Copies task content to clipboard so you can paste it into Cursor AI chat. Optionally launches Cursor. |
 | `qwen_bridge_status` | Prints current config and confirms AutoClaude is alive. |
 | `get_task_report` | Reads the standardized _summary.md execution report for a dispatched task. |
 | `get_savings_report` | **New in v4.2** — Shows cumulative token and cost savings across all tasks. |
 
 **The workflow**: Claude plans the architecture, writes detailed task files (`QWEN_*.md` / `CURSOR_*.md`), then dispatches them. Qwen Code executes silently in the background, or Cursor picks up the clipboard content. **Claude tokens stay free for planning.**
+
+## Multi-Agent Support (v5.0)
+
+AutoClaude supports any terminal-invocable AI coding CLI. Choose the tool that matches your subscription and token plan.
+
+### Built-in Agents
+
+| Agent | Command | Type | YOLO Flag | Install |
+|-------|---------|------|-----------|---------|
+| **Qwen Code** | `qwen` | CLI | `-y` | `npm i -g @qwen-code/qwen-code` |
+| **Gemini CLI** | `gemini` | CLI | `--yolo` | `npm i -g @google/gemini-cli` |
+| **Codex CLI** | `codex` | CLI | `--approval-mode yolo` | `npm i -g @openai/codex` |
+| **Aider** | `aider` | CLI | `--yes` | `pip install aider-chat` |
+| **OpenCode** | `opencode` | CLI | `-y` | `npm i -g @opencode-ai/cli` |
+| **Cline CLI** | `cline` | CLI | `-y` | `npm i -g @cline/cli` |
+| **Cursor AI** | `cursor` | Clipboard | — | [cursor.com](https://cursor.com) |
+
+### Switching Agents
+
+```
+Claude: list_agents → see what's available
+User: "I want to use Gemini CLI"
+Claude: switch_agent("gemini")
+Claude: dispatch_task("MY_TASK.md", "Build feature X")
+→ AutoClaude pipes task to gemini --yolo in the background
+```
+
+### Adding Custom Agents
+
+```
+Claude: add_custom_agent("my-tool", "My Agent", "my-ai", "-y", "--text")
+```
+
+Don't see your tool? Use `add_custom_agent` to register any CLI tool.
 
 ```mermaid
 flowchart LR
@@ -40,12 +78,13 @@ flowchart LR
 
 ## Why This Exists
 
-Claude Code excels at **planning** — architecture, code review, debugging strategy. But large implementations burn tokens fast. Qwen Code and Cursor have their own token pools. AutoClaude lets you:
+Claude Code excels at **planning** — architecture, code review, debugging strategy. But large implementations burn tokens fast. AutoClaude's multi-agent system lets you dispatch to **any AI coding CLI** — Qwen Code, Gemini CLI, Codex, Aider, and more — each with its own token pool. AutoClaude lets you:
 
 1. **Plan strategically in Claude** (low token usage)
-2. **Execute in Qwen/Cursor** (uses their tokens, not Claude's)
+2. **Execute in any agent** (uses their tokens, not Claude's)
 3. **Zero manual copy-paste** — AutoClaude handles dispatch, notifications, clipboard, and background execution
-4. **YOLO mode by default** — Qwen Code auto-approves all actions, no confirmation prompts
+4. **YOLO mode by default** — agents auto-approve all actions, no confirmation prompts
+5. **Switch agents on the fly** — pick the right tool for each task's needs and your subscription plan
 
 ### 💰 Token Savings
 
@@ -71,13 +110,20 @@ npm run build
 
 ## Configuration
 
-Edit `config.json`:
+Edit `config.json`. See the [agents structure](config.json) for the full multi-agent configuration:
 
 ```json
 {
   "projectDir": "D:\\your-project",
   "qwenCommand": "qwen",
   "cursorCommand": "cursor",
+  "activeAgent": "qwen",
+  "agents": {
+    "qwen": { "command": "qwen", "yoloFlag": "-y", "type": "cli" },
+    "gemini": { "command": "gemini", "yoloFlag": "--yolo", "type": "cli" },
+    "codex": { "command": "codex", "yoloFlag": "--approval-mode yolo", "type": "cli" },
+    "cursor": { "command": "cursor", "type": "clipboard" }
+  },
   "terminalApp": "wt.exe",
   "notifyOnDispatch": true,
   "speechOnDispatch": true,

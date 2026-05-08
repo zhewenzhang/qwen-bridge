@@ -6,23 +6,59 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.2.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
+[![Version](https://img.shields.io/badge/version-5.0.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
 
 ---
 
 ## 这是什么？
 
-AutoClaude 是一个 **MCP (Model Context Protocol) Server**，让 Claude Code 能够将编程任务派发给外部 AI 编码代理 —— **Qwen Code** 和 **Cursor AI**。
+AutoClaude 是一个 **MCP (Model Context Protocol) Server**，让 Claude Code 能够将编程任务派发给外部 AI 编码代理 —— 支持 **Qwen Code、Gemini CLI、Codex CLI、Aider、OpenCode、Cline CLI、Cursor AI** 等多种工具。
 
-Claude 负责战略和规划。AutoClaude 在后台静默派发任务。每个工具使用自己的 Token 池，Claude 保持轻量，繁重工作由其他模型完成。
+Claude 负责战略和规划。AutoClaude 在后台静默派发任务。每个工具使用自己的 Token 池，Claude 保持轻量，繁重工作由其他模型完成。支持多 Agent 切换和自定义 CLI 注册。
 
 | 工具 | 功能 |
 |------|------|
-| `dispatch_to_qwen` | 将任务文件通过管道传给 Qwen Code，后台静默运行，YOLO 全自动模式。零交互。 |
-| `dispatch_to_cursor` | 将任务内容复制到剪贴板，粘贴到 Cursor AI Chat 即可执行。可选择启动 Cursor。 |
+| `dispatch_task` | 统一派发任务到当前活跃的 AI 编码代理 |
+| `list_agents` | 列出所有可用的 AI 编码代理 |
+| `switch_agent` | 切换活跃的 AI 编码代理 |
+| `add_custom_agent` | 注册自定义 CLI 工具 |
 | `qwen_bridge_status` | 查看当前配置和运行状态。 |
 | `get_task_report` | 读取标准化任务报告，查看 Planner/Executor 分工详情。 |
 | `get_savings_report` | **新增 v4.2** — 查看累计 Token 和成本节省。 |
+
+## 多 Agent 支持（v5.0）
+
+AutoClaude 支持任何可通过终端调用的 AI 编码 CLI。选择适合你的订阅和 Token 计划的工具。
+
+### 内置 Agent
+
+| Agent | 命令 | 类型 | YOLO 标志 | 安装 |
+|-------|------|------|-----------|------|
+| **Qwen Code** | `qwen` | CLI | `-y` | `npm i -g @qwen-code/qwen-code` |
+| **Gemini CLI** | `gemini` | CLI | `--yolo` | `npm i -g @google/gemini-cli` |
+| **Codex CLI** | `codex` | CLI | `--approval-mode yolo` | `npm i -g @openai/codex` |
+| **Aider** | `aider` | CLI | `--yes` | `pip install aider-chat` |
+| **OpenCode** | `opencode` | CLI | `-y` | `npm i -g @opencode-ai/cli` |
+| **Cline CLI** | `cline` | CLI | `-y` | `npm i -g @cline/cli` |
+| **Cursor AI** | `cursor` | 剪贴板 | — | [cursor.com](https://cursor.com) |
+
+### 切换 Agent
+
+```
+Claude: list_agents → 查看可用代理
+用户: "我想用 Gemini CLI"
+Claude: switch_agent("gemini")
+Claude: dispatch_task("MY_TASK.md", "构建功能 X")
+→ AutoClaude 在后台将任务通过管道传给 gemini --yolo
+```
+
+### 添加自定义 Agent
+
+```
+Claude: add_custom_agent("my-tool", "我的工具", "my-ai", "-y", "--text")
+```
+
+找不到你的工具？使用 `add_custom_agent` 注册任何 CLI 工具。
 
 **工作流程**：Claude 设计架构，编写详细任务文件（`QWEN_*.md` / `CURSOR_*.md`），然后派发。Qwen Code 在后台静默执行，或 Cursor 通过剪贴板接收任务。**Claude Token 只用于规划，执行零消耗。**
 
