@@ -7,22 +7,17 @@
 <Files to examine, logs to check>
 
 ## Phase 2: Apply fix
-<Exact code changes with file paths>
+<Exact code changes>
 
-## Phase 3: Verify
+## Phase 3: Verify fix
 ```bash
 npx tsc
-verify_project
 ```
 
 ## Phase N: Commit and Push
-```bash
-git add -A && git commit -m "fix: <description>" && git push origin main
-```
 
 ## Checklist
 - [ ] Root cause identified
-- [ ] Fix applied correctly
-- [ ] `npx tsc` passes
+- [ ] Fix applied
+- [ ] Compilation passes
 - [ ] Bug no longer reproducible
-- [ ] Committed and pushed

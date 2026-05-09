@@ -6,6 +6,8 @@
 ## Phase 1: <first step>
 <Exact instructions, file paths, code>
 
+## Phase 2: <second step>
+
 ## Phase N: Commit and Push
 ```bash
 git add -A
@@ -14,7 +16,7 @@ git push origin main
 ```
 
 ## Checklist
-- [ ] All phases complete
-- [ ] `npx tsc` passes
-- [ ] `verify_project` passes
+- [ ] Phase 1 complete
+- [ ] Phase 2 complete
+- [ ] npx tsc passes
 - [ ] Committed and pushed

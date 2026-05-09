@@ -13,11 +13,11 @@ npm test
 ## Phase 2: Build & publish
 ```bash
 npm run build
-npm publish
+npm publish  # or: gh release create vX.Y.Z
 ```
 
 ## Phase 3: Post-deploy verification
-- [ ] Landing page loads: `https://zhewenzhang.github.io/AutoClaude/`
+- [ ] Landing page loads
 - [ ] GitHub release visible
 - [ ] NPM package updated
 

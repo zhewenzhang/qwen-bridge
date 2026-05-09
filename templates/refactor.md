@@ -4,24 +4,19 @@
 <Current state. Why refactoring is needed. Target architecture.>
 
 ## Phase 1: Extract <module A>
-Create `src/<module>.ts`:
-```typescript
-// Extracted code here
-```
+<Files to create, exact code>
 
-## Phase 2: Update imports
-Update `src/index.ts` to import from new module.
+## Phase 2: Extract <module B>
 
 ## Phase N: Verify & Commit
 ```bash
 npx tsc
 verify_project
-git add -A && git commit -m "refactor: <description>" && git push origin main
+git add -A && git commit -m "refactor: <description>"
 ```
 
 ## Checklist
 - [ ] No behavioral changes
-- [ ] All imports updated correctly
-- [ ] `npx tsc` passes
-- [ ] `verify_project` passes (all 7 modules present)
-- [ ] Committed and pushed
+- [ ] All imports updated
+- [ ] Compilation passes
+- [ ] verify_project passes
