@@ -55,7 +55,7 @@ export function runCliAgent(config: BridgeConfig, taskPath: string, taskName: st
   const agentFlags = [agent.yoloMode ? (agent.yoloFlag || '-y') : '', agent.outputFlag || ''].filter(Boolean).join(' ');
   const batFile = path.join(os.tmpdir(), `_ac_run_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.bat`);
   fs.writeFileSync(batFile, ['@echo off', `cd /d "${config.projectDir}"`, `type "${tmpTaskFile}" | ${agent.command} ${agentFlags} > "${resultLog}" 2>&1`].join('\r\n') + '\r\n');
-  spawn('cmd.exe', ['/c', 'start', '/min', '', batFile], { detached: true, stdio: 'ignore', shell: false }).unref();
+  spawn('cmd.exe', ['/c', batFile], { detached: true, stdio: 'ignore', shell: false, windowsHide: true }).unref();
 }
 
 export function runClipboardAgent(config: BridgeConfig, taskPath: string, clipboardOk: boolean): void {
