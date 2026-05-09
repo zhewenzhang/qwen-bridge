@@ -1,0 +1,152 @@
+[
+  {
+    "taskName": "QWEN_GITHUB_SETUP",
+    "timestamp": "2026-05-08T13:00:00Z",
+    "claudeTokensIn": 4000,
+    "claudeTokensOut": 3000,
+    "estimatedExecutionTokensIn": 15000,
+    "estimatedExecutionTokensOut": 10000,
+    "tokensSaved": 18000,
+    "costSaved": 0.23
+  },
+  {
+    "taskName": "QWEN_V30_POLISH",
+    "timestamp": "2026-05-08T14:00:00Z",
+    "claudeTokensIn": 4500,
+    "claudeTokensOut": 3500,
+    "estimatedExecutionTokensIn": 13000,
+    "estimatedExecutionTokensOut": 9000,
+    "tokensSaved": 14000,
+    "costSaved": 0.18
+  },
+  {
+    "taskName": "QWEN_AUTOCLAUDE_REBRAND",
+    "timestamp": "2026-05-08T15:00:00Z",
+    "claudeTokensIn": 5500,
+    "claudeTokensOut": 4500,
+    "estimatedExecutionTokensIn": 18000,
+    "estimatedExecutionTokensOut": 12000,
+    "tokensSaved": 20000,
+    "costSaved": 0.25
+  },
+  {
+    "taskName": "QWEN_STANDARD_OUTPUT",
+    "timestamp": "2026-05-08T16:00:00Z",
+    "claudeTokensIn": 5000,
+    "claudeTokensOut": 4000,
+    "estimatedExecutionTokensIn": 16000,
+    "estimatedExecutionTokensOut": 12000,
+    "tokensSaved": 19000,
+    "costSaved": 0.255
+  },
+  {
+    "taskName": "QWEN_TOKEN_SAVINGS",
+    "timestamp": "2026-05-08T17:00:00Z",
+    "claudeTokensIn": 5500,
+    "claudeTokensOut": 4500,
+    "estimatedExecutionTokensIn": 19000,
+    "estimatedExecutionTokensOut": 13000,
+    "tokensSaved": 22000,
+    "costSaved": 0.28
+  },
+  {
+    "taskName": "QWEN_V5_MULTI_AGENT",
+    "timestamp": "2026-05-08T18:00:00Z",
+    "claudeTokensIn": 6500,
+    "claudeTokensOut": 5500,
+    "estimatedExecutionTokensIn": 22000,
+    "estimatedExecutionTokensOut": 16000,
+    "tokensSaved": 26000,
+    "costSaved": 0.34
+  },
+  {
+    "taskName": "QWEN_DOCS_I18N",
+    "timestamp": "2026-05-09T01:00:00Z",
+    "claudeTokensIn": 6000,
+    "claudeTokensOut": 5000,
+    "estimatedExecutionTokensIn": 20000,
+    "estimatedExecutionTokensOut": 15000,
+    "tokensSaved": 24000,
+    "costSaved": 0.32
+  },
+  {
+    "taskName": "QWEN_INDEX_I18N",
+    "timestamp": "2026-05-09T01:30:00Z",
+    "claudeTokensIn": 1500,
+    "claudeTokensOut": 500,
+    "estimatedExecutionTokensIn": 3000,
+    "estimatedExecutionTokensOut": 2000,
+    "tokensSaved": 3000,
+    "costSaved": 0.045
+  },
+  {
+    "taskName": "QWEN_BEAUTIFY_OUTPUT",
+    "timestamp": "2026-05-09T08:00:00Z",
+    "claudeTokensIn": 4500,
+    "claudeTokensOut": 3500,
+    "estimatedExecutionTokensIn": 17000,
+    "estimatedExecutionTokensOut": 13000,
+    "tokensSaved": 22000,
+    "costSaved": 0.3
+  },
+  {
+    "taskName": "QWEN_DISCIPLINE",
+    "timestamp": "2026-05-09T09:17:00Z",
+    "claudeTokensIn": 3000,
+    "claudeTokensOut": 2000,
+    "estimatedExecutionTokensIn": 5000,
+    "estimatedExecutionTokensOut": 3000,
+    "tokensSaved": 3000,
+    "costSaved": 0.035
+  },
+  {
+    "taskName": "QWEN_UPDATE_README",
+    "timestamp": "2026-05-09T09:31:00Z",
+    "claudeTokensIn": 3500,
+    "claudeTokensOut": 2500,
+    "estimatedExecutionTokensIn": 9000,
+    "estimatedExecutionTokensOut": 6000,
+    "tokensSaved": 9000,
+    "costSaved": 0.115
+  },
+  {
+    "taskName": "QWEN_FIX_REPORT",
+    "timestamp": "2026-05-09T10:23:00Z",
+    "claudeTokensIn": 4000,
+    "claudeTokensOut": 3000,
+    "estimatedExecutionTokensIn": 12000,
+    "estimatedExecutionTokensOut": 8000,
+    "tokensSaved": 13000,
+    "costSaved": 0.165
+  },
+  {
+    "taskName": "QWEN_ONBOARDING",
+    "timestamp": "2026-05-09T10:37:00Z",
+    "claudeTokensIn": 4500,
+    "claudeTokensOut": 3500,
+    "estimatedExecutionTokensIn": 13000,
+    "estimatedExecutionTokensOut": 9000,
+    "tokensSaved": 14000,
+    "costSaved": 0.18
+  },
+  {
+    "taskName": "QWEN_CHANGELOG_SESSION",
+    "timestamp": "2026-05-09T10:54:00Z",
+    "claudeTokensIn": 4000,
+    "claudeTokensOut": 3000,
+    "estimatedExecutionTokensIn": 11000,
+    "estimatedExecutionTokensOut": 7000,
+    "tokensSaved": 11000,
+    "costSaved": 0.135
+  },
+  {
+    "taskName": "QWEN_NPM_AUTH",
+    "timestamp": "2026-05-09T11:10:00Z",
+    "claudeTokensIn": 4500,
+    "claudeTokensOut": 3000,
+    "estimatedExecutionTokensIn": 13000,
+    "estimatedExecutionTokensOut": 8000,
+    "tokensSaved": 13500,
+    "costSaved": 0.1675
+  }
+]

@@ -1,6 +1,6 @@
 {
   "name": "autoclaude",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "description": "AutoClaude — Plan with Claude, Execute Everywhere. MCP bridge connecting Claude Code to Qwen Code, Gemini CLI, and more.",
   "private": false,
   "type": "module",
