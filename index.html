@@ -139,6 +139,7 @@ body {
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#agents" data-i18n-nav="nav_agents">Agents</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#process" data-i18n-nav="nav_process">Process</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#savings" data-i18n-nav="nav_savings">Savings</a>
+        <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#report" data-i18n-nav="nav_report">Report</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#features" data-i18n-nav="nav_features">Features</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude/tree/main/docs" target="_blank" data-i18n-nav="nav_docs">Docs</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude" data-i18n-nav="nav_github">GitHub</a>
@@ -362,6 +363,33 @@ body {
     </div>
 </section>
 
+<!-- Project Report Preview -->
+<section id="report" class="py-8">
+    <div class="max-w-4xl mx-auto glass-card rounded-2xl p-8 md:p-12 space-y-6">
+        <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-3xl text-primary-container">description</span>
+            <div>
+                <h2 class="text-2xl font-bold text-on-background" data-i18n="report_title">Project Report</h2>
+                <p class="text-sm text-on-surface-variant" data-i18n="report_sub">Auto-generated after every task. Shows who did what, token usage, and cost savings.</p>
+            </div>
+        </div>
+        <div class="bg-surface-container-low rounded-xl p-4 font-mono text-xs leading-relaxed text-on-surface overflow-x-auto">
+            <span class="text-on-surface-variant"># \ud83d\udcca AutoClaude Project Report</span><br/>
+            <span class="text-on-surface-variant">## \ud83d\udc65 Who Did What</span><br/>
+            | \ud83e\udde0 <strong>Claude Code</strong> | Strategy, planning, verification | ~7K tokens/task |<br/>
+            | \ud83d\udd17 <strong>AutoClaude</strong> | Dispatch, capture, cost tracking | 0 tokens (local) |<br/>
+            | \u26a1 <strong>Qwen Code</strong> | File ops, git, build, deploy | ~25K tokens/task |<br/>
+            <br/>
+            <span class="text-on-surface-variant">## \ud83d\udcb0 Savings</span><br/>
+            | Total Tasks: <strong>12</strong> | Tokens Saved: <strong>~216,000</strong> | Cost Saved: <strong>$3.60</strong> |
+        </div>
+        <p class="text-xs text-on-surface-variant" data-i18n="report_footer">
+            Call <code class="bg-surface-container px-1 rounded">get_project_report</code> in Claude to see your live report.
+        </p>
+    </div>
+</section>
+
+
 <!-- Features -->
 <section id="features" class="space-y-12">
     <div class="text-center space-y-4">
@@ -449,6 +477,7 @@ body {
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#how-it-works" data-i18n-nav="footer_how">How It Works</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#process" data-i18n-nav="footer_process">Process</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#savings" data-i18n-nav="footer_savings">Savings</a>
+        <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#report" data-i18n-nav="footer_report">Report</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="#features" data-i18n-nav="footer_features">Features</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude" data-i18n-nav="footer_github">GitHub</a>
         <a class="text-slate-500 hover:text-primary-container hover:translate-y-[-2px] transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude/tree/main/docs" target="_blank" data-i18n-nav="footer_docs">Docs</a>
