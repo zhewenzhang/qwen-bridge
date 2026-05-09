@@ -876,21 +876,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [{
         type: 'text' as const,
-        text: [
-          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
-          '\u2502           Task Dispatched to Qwen Code               \u2502',
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          `\u2502  Agent   : ${padStr(agentLabel, W - 12)}\u2502`,
-          `\u2502  File    : ${padStr(path.basename(taskPath), W - 12)}\u2502`,
-          `\u2502  Mode    : ${padStr(modeStr, W - 12)}\u2502`,
-          `\u2502  YOLO    : ${padStr(yoloStr, W - 12)}\u2502`,
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          `\u2502  \ud83d\udcc4 Result : ${padStr(path.basename(resultLog), W - 12)}\u2502`,
-          `\u2502  \ud83d\udccb Report : ${padStr(path.basename(summaryPath), W - 12)}\u2502`,
-          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
-          '',
-          '\ud83d\ude80 Agent executing in background. Check _summary.md when done.',
-        ].join('\n'),
+        [
+                  '── Task Dispatched ──',
+                  '',
+                  'Agent    : ' + (agent.label || agent.name || config.activeAgent),
+                  'Task     : ' + path.basename(taskPath),
+                  'Mode     : ' + (config.showTerminal ? 'Visible Terminal' : 'Headless Background'),
+                  'YOLO     : ' + (agent.yoloMode ? '✅ Auto-Approve ON' : '⚠️ Manual Confirm'),
+                  '',
+                  '📄 Result Log    : ' + path.basename(resultLog),
+                  '📋 Report        : ' + path.basename(summaryPath),
+                  '',
+                  '🚀 Agent executing in background. Check report for progress.',
+                ].join('\n')
       }],
     };
   }
@@ -939,20 +937,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [{
         type: 'text' as const,
-        text: [
-          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
-          '\u2502           Task Dispatched to Cursor                  \u2502',
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          `\u2502  File       : ${padStr(path.basename(taskPath), W - 15)}\u2502`,
-          `\u2502  Clipboard  : ${padStr(clipboardOk ? '\u2705 Copied (Ctrl+V into Cursor)' : '\u274c Copy failed', W - 15)}\u2502`,
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          clipboardOk
-            ? `\u2502  \u27a1\ufe0f ${padStr('Open Cursor AI chat and press Ctrl+V', W - 6)}\u2502`
-            : `\u2502  \u26a0\ufe0f ${padStr('Open the task file manually in Cursor', W - 6)}\u2502`,
-          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
-          '',
-          '\ud83d\ude80 Claude is free \u2014 Cursor AI runs independently using its own tokens.',
-        ].join('\n'),
+        [
+                  '── Task Dispatched (Clipboard) ──',
+                  '',
+                  'Agent      : ' + (cursorAgent.label || cursorAgent.name),
+                  'Task       : ' + path.basename(taskPath),
+                  'Clipboard  : ' + (clipboardOk ? '✅ Copied' : '⚠️ Failed'),
+                  '',
+                  clipboardOk ? 'Open the agent and paste (Ctrl+V).' : 'Open the task file manually.',
+                ].join('\n')
       }],
     };
   }
@@ -1004,21 +997,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [{
         type: 'text' as const,
-        text: [
-          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
-          '\u2502           Task Dispatched                        \u2502',
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          `\u2502  Agent   : ${padStr(agentLabel, W - 12)}\u2502`,
-          `\u2502  File    : ${padStr(path.basename(taskPath), W - 12)}\u2502`,
-          `\u2502  Mode    : ${padStr(modeStr, W - 12)}\u2502`,
-          `\u2502  YOLO    : ${padStr(yoloStr, W - 12)}\u2502`,
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          `\u2502  \ud83d\udcc4 Result : ${padStr(path.basename(resultLog), W - 12)}\u2502`,
-          `\u2502  \ud83d\udccb Report : ${padStr(path.basename(summaryPath), W - 12)}\u2502`,
-          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
-          '',
-          '\ud83d\ude80 Agent executing in background. Check _summary.md when done.',
-        ].join('\n'),
+        [
+                  '── Task Dispatched ──',
+                  '',
+                  'Agent    : ' + (agent.label || agent.name || config.activeAgent),
+                  'Task     : ' + path.basename(taskPath),
+                  'Mode     : ' + (config.showTerminal ? 'Visible Terminal' : 'Headless Background'),
+                  'YOLO     : ' + (agent.yoloMode ? '✅ Auto-Approve ON' : '⚠️ Manual Confirm'),
+                  '',
+                  '📄 Result Log    : ' + path.basename(resultLog),
+                  '📋 Report        : ' + path.basename(summaryPath),
+                  '',
+                  '🚀 Agent executing in background. Check report for progress.',
+                ].join('\n')
       }],
     };
   }
@@ -1087,19 +1078,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [{
         type: 'text' as const,
-        text: [
-          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
-          '\u2502         Agent Switched                    \u2502',
-          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
-          `\u2502  From : ${padStr(oldName, W - 11)}\u2502`,
-          `\u2502  To   : ${padStr(newLabel, W - 11)}\u2502`,
-          `\u2502  Cmd  : ${padStr(newAgent.command, W - 11)}\u2502`,
-          `\u2502  YOLO : ${padStr(newAgent.yoloMode ? '\u2705 ON' : '\u274c OFF', W - 11)}\u2502`,
-          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
-          '',
-          '\u2705 All dispatch_task calls will now use this agent.',
-          'This change is persisted to config.json.',
-        ].join('\n'),
+        [
+                  '── Configured Agents ──',
+                  '',
+                  ...Object.entries(config.agents).map(([id, a]) => {
+                    const star = id === config.activeAgent ? '⭐' : ' ';
+                    const yolo = a.yoloMode ? '✅' : '❌';
+                    const typeIcon = a.type === 'clipboard' ? '📋' : '🖥️';
+                    const name = (a.label || a.name || id).padEnd(18);
+                    const cmd = a.command.padEnd(12);
+                    const disabled = a.enabled ? '' : ' (disabled)';
+                    return star + ' ' + name + typeIcon + ' YOLO:' + yolo + '  ' + cmd + disabled;
+                  }),
+                  '',
+                  'Active: ' + (config.agents[config.activeAgent]?.label || config.agents[config.activeAgent]?.name || config.activeAgent) + ' — switch_agent("<id>") to change',
+                ].join('\n')
+        [
+                  '── Agent Switched ──',
+                  '',
+                  'From : ' + oldName,
+                  'To   : ' + (newAgent.label || newAgent.name),
+                  'Cmd  : ' + newAgent.command,
+                  'YOLO : ' + (newAgent.yoloMode ? '✅ ON' : '❌ OFF'),
+                  '',
+                  '✅ All dispatch_task calls will now use this agent.',
+                ].join('\n')
       }],
     };
   }
@@ -1160,25 +1163,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [{
         type: 'text' as const,
-        text: [
-          '\u250c' + '\u2500'.repeat(W) + '\u2510',
-          '\u2502' + padStr(`              AutoClaude v${getVersion()} \u2014 Status               `, W) + '\u2502',
-          '\u251c' + '\u2500'.repeat(W) + '\u2524',
-          `\u2502  Active Agent : ${padStr(agent.label || agent.name, W - 19)}\u2502`,
-          `\u2502  Command      : ${padStr(agent.command, W - 19)}\u2502`,
-          `\u2502  YOLO Mode    : ${padStr(agent.yoloMode ? '\u2705 ON' : '\u274c OFF', W - 19)}\u2502`,
-          `\u2502  Terminal     : ${padStr(config.showTerminal ? 'visible' : 'headless background', W - 19)}\u2502`,
-          '\u251c' + '\u2500'.repeat(W) + '\u2524',
-          `\u2502  Agents       : ${padStr(`${enabledCount} enabled / ${totalCount} total`, W - 19)}\u2502`,
-          `\u2502  Project Dir  : ${padStr((config.projectDir || '').substring(0, W - 19), W - 19)}\u2502`,
-          '\u251c' + '\u2500'.repeat(W) + '\u2524',
-          `\u2502  \ud83d\udcb0 Savings  : ${padStr(`${cum.tasks} tasks \u00b7 ${cum.tokensSaved.toLocaleString()} tokens \u00b7 $${cum.costSaved.toFixed(2)}`, W - 19)}\u2502`,
-          '\u2514' + '\u2500'.repeat(W) + '\u2518',
-          '',
-          'Tools: dispatch_task \u00b7 dispatch_to_qwen \u00b7 dispatch_to_cursor',
-          '       list_agents \u00b7 switch_agent \u00b7 add_custom_agent',
-          '       get_task_report \u00b7 get_savings_report \u00b7 qwen_bridge_status',
-        ].join('\n'),
+        [
+                  '── AutoClaude ' + getVersion() + ' ──',
+                  '',
+                  'Active Agent : ' + (agent.label || agent.name) + ' (`' + config.activeAgent + '`)',
+                  'Command      : ' + agent.command,
+                  'YOLO Mode    : ' + (agent.yoloMode ? '✅ ON' : '❌ OFF'),
+                  'Terminal     : ' + (config.showTerminal ? 'visible' : 'headless background'),
+                  'Agents       : ' + enabledCount + ' enabled / ' + totalCount + ' total',
+                  'Project Dir  : ' + (config.projectDir || ''),
+                  '💰 Savings   : ' + cum.tasks + ' tasks · ' + cum.tokensSaved.toLocaleString() + ' tokens · $' + cum.costSaved.toFixed(2),
+                  '',
+                  'Tools: dispatch_task · list_agents · switch_agent · add_custom_agent',
+                  '       check_agent · verify_agent_auth · get_task_report',
+                  '       get_savings_report · get_project_report · qwen_bridge_status',
+                ].join('\n')
       }],
     };
   }
@@ -1454,15 +1453,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return {
         content: [{
           type: 'text' as const,
-          text: [
-            'Auth Verified',
-            '',
-            `Agent   : ${agent.name || targetId}`,
-            `Status  : Authenticated and Ready`,
-            `Command : ${agent.command}`,
-            '',
-            `${agent.name || targetId} is authenticated and responding. Ready to dispatch tasks.`,
-          ].join('\n'),
+        [
+                  '── Auth Verified ──',
+                  '',
+                  'Agent   : ' + (agent.label || agent.name || targetId),
+                  'Status  : ✅ Authenticated & Ready',
+                  'Command : ' + agent.command,
+                ].join('\n')
         }],
       };
     }
