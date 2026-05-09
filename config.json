@@ -8,79 +8,69 @@
     "qwen": {
       "name": "Qwen Code",
       "command": "qwen",
-      "type": "cli",
-      "yoloFlag": "-y",
+      "args": [
+        "-y",
+        "--output-format",
+        "text"
+      ],
       "yoloMode": true,
-      "outputFlag": "--output-format text",
-      "installHint": "npm install -g @qwen-code/qwen-code",
       "showTerminal": false,
-      "enabled": true
-    },
-    "gemini": {
-      "name": "Gemini CLI",
-      "command": "gemini",
-      "type": "cli",
-      "yoloFlag": "--yolo",
-      "yoloMode": true,
-      "outputFlag": "",
-      "installHint": "npm install -g @google/gemini-cli",
-      "showTerminal": false,
-      "enabled": false
-    },
-    "codex": {
-      "name": "Codex CLI",
-      "command": "codex",
-      "type": "cli",
-      "yoloFlag": "--approval-mode yolo",
-      "yoloMode": true,
-      "outputFlag": "",
-      "installHint": "npm install -g @openai/codex",
-      "showTerminal": false,
-      "enabled": false
-    },
-    "aider": {
-      "name": "Aider",
-      "command": "aider",
-      "type": "cli",
-      "yoloFlag": "--yes",
-      "yoloMode": true,
-      "outputFlag": "",
-      "installHint": "pip install aider-chat",
-      "showTerminal": false,
-      "enabled": false
-    },
-    "opencode": {
-      "name": "OpenCode",
-      "command": "opencode",
-      "type": "cli",
-      "yoloFlag": "-y",
-      "yoloMode": true,
-      "outputFlag": "",
-      "installHint": "npm install -g @opencode-ai/cli",
-      "showTerminal": false,
-      "enabled": false
-    },
-    "cline": {
-      "name": "Cline CLI",
-      "command": "cline",
-      "type": "cli",
-      "yoloFlag": "-y",
-      "yoloMode": true,
-      "outputFlag": "",
-      "installHint": "npm install -g @cline/cli",
-      "showTerminal": false,
-      "enabled": false
+      "enabled": true,
+      "type": "cli"
     },
     "cursor": {
       "name": "Cursor AI",
       "command": "cursor",
-      "type": "clipboard",
-      "yoloFlag": "",
+      "args": [],
       "yoloMode": false,
-      "outputFlag": "",
-      "installHint": "https://cursor.com",
       "showTerminal": false,
-      "enabled": false
+      "enabled": false,
+      "type": "clipboard"
+    },
+    "gemini": {
+      "name": "Gemini CLI",
+      "command": "gemini",
+      "args": [],
+      "yoloMode": true,
+      "showTerminal": false,
+      "enabled": true,
+      "type": "cli"
+    },
+    "codex": {
+      "name": "Codex CLI",
+      "command": "codex",
+      "args": [],
+      "yoloMode": true,
+      "showTerminal": false,
+      "enabled": false,
+      "type": "cli"
+    },
+    "aider": {
+      "name": "Aider",
+      "command": "aider",
+      "args": [],
+      "yoloMode": true,
+      "showTerminal": false,
+      "enabled": false,
+      "type": "cli"
+    },
+    "opencode": {
+      "name": "OpenCode",
+      "command": "opencode",
+      "args": [],
+      "yoloMode": true,
+      "showTerminal": false,
+      "enabled": false,
+      "type": "cli"
+    },
+    "cline": {
+      "name": "Cline CLI",
+      "command": "cline",
+      "args": [],
+      "yoloMode": true,
+      "showTerminal": false,
+      "enabled": false,
+      "type": "cli"
     }
   },
   "projectDir": "D:\\qwen-bridge",

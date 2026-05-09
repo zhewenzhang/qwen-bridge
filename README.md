@@ -4,6 +4,8 @@
 
 🌐 **[Landing Page](https://zhewenzhang.github.io/AutoClaude/)** · 📖 [中文说明](README_CN.md)
 
+📋 [Changelog](CHANGELOG.md) | 📊 [Session Report](SESSION_REPORT.md)
+
 [![MCP](https://img.shields.io/badge/MCP-Protocol-blue?logo=anthropic)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
@@ -107,6 +109,8 @@ Every task is automatically tracked. Use `get_savings_report` in Claude to see y
 | Equivalent full-Claude | ~25,000 |
 | **Tokens saved** | **~18,000 (72%)** |
 | **Cost saved** | **~$0.30 (Opus 4.7)** |
+
+> See [SESSION_REPORT.md](SESSION_REPORT.md) for a real example — 13 tasks, 67% token savings, $3.10 saved in one session.
 
 > At 100 tasks/month: **$30/month saved**. At 1,000 tasks/month: **$300/month saved**.
 
