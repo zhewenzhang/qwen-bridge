@@ -119,7 +119,7 @@ Every task is automatically tracked. Use `get_savings_report` in Claude to see y
 ### Quick Install (NPM)
 
 ```bash
-npm install -g autoclaude
+npm install -g @davezhang/autoclaude
 ```
 
 ### From GitHub
