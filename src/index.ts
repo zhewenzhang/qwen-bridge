@@ -4,6 +4,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { readFileSync } from 'node:fs';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 import type { BridgeConfig, AgentConfig } from './types.js';
 import { loadConfig, saveConfig, getActiveAgent } from './config.js';
@@ -42,7 +43,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: 'text' as const, text: '── Clipboard Task ──\n\nAgent: ' + (agent.label || agent.name) + '\nTask: ' + path.basename(taskPath) + '\nClipboard: ' + (ok ? '✅ Copied' : '⚠️ Failed') + '\n\n' + (ok ? 'Open agent and paste (Ctrl+V).' : 'Open task file manually.') }] };
       }
       runCliAgent(config, taskPath, taskName);
-      return { content: [{ type: 'text' as const, text: '── Task Dispatched ──\n\nAgent: ' + (agent.label || agent.name || config.activeAgent) + '\nTask: ' + path.basename(taskPath) + '\nMode: ' + (config.showTerminal ? 'Visible' : 'Headless Background') + '\nYOLO: ' + (agent.yoloMode ? '✅ ON' : '❌ OFF') + '\n\n📄 Result: ' + path.basename(taskPath.replace(/\.md$/, '_result.log')) + '\n📋 Report: ' + path.basename(taskPath.replace(/\.md$/, '_summary.md')) + '\n\n🚀 Agent executing in background.' }] };
+      return { content: [{ type: 'text' as const, text: '── Task Dispatched ──\n\nAgent: ' + (agent.label || agent.name || config.activeAgent) + '\nTask: ' + path.basename(taskPath) + '\nMode: ' + (config.showTerminal ? 'Visible' : 'Headless Background') + '\nYOLO: ' + (agent.yoloMode ? '✅ ON' : '❌ OFF') + '\n\n📄 Result: ' + path.basename(taskPath.replace(/\.md$/, '_result.log')) + '\n📋 Report: ' + path.basename(taskPath.replace(/\.md$/, '_summary.md')) + '\n\n🚀 Agent executing in background.\n\n💡 After the agent completes, run `verify_project` to check project health.' }] };
     }
 
     // ── dispatch_to_qwen ─────────────────────────────────────────────────────
@@ -142,6 +143,72 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const enabledCount = Object.values(config.agents).filter(a => a.enabled).length;
       const totalCount = Object.keys(config.agents).length;
       return { content: [{ type: 'text' as const, text: '── AutoClaude ' + getVersion() + ' ──\n\nActive Agent: ' + (agent.label || agent.name) + ' (`' + config.activeAgent + '`)\nCommand: ' + agent.command + '\nYOLO Mode: ' + (agent.yoloMode ? '✅ ON' : '❌ OFF') + '\nTerminal: ' + (config.showTerminal ? 'visible' : 'headless background') + '\nAgents: ' + enabledCount + ' enabled / ' + totalCount + ' total\nProject Dir: ' + config.projectDir + '\n💰 Savings: ' + cum.tasks + ' tasks · ' + cum.tokensSaved.toLocaleString() + ' tokens · $' + cum.costSaved.toFixed(2) }] };
+    }
+
+    // ── verify_project ───────────────────────────────────────────────────────
+    if (toolName === 'verify_project') {
+      const results: string[] = ['── Project Health Check ──', ''];
+      
+      // 1. TypeScript compilation
+      try {
+        execSync('npx tsc', { timeout: 15000, encoding: 'utf-8', stdio: 'pipe', cwd: config.projectDir });
+        results.push('✅ TypeScript: Compiles successfully');
+      } catch (e: any) {
+        results.push('❌ TypeScript: Compilation FAILED');
+        results.push('   ' + (e.stderr || e.stdout || e.message || '').substring(0, 200).replace(/\n/g, '\n   '));
+      }
+      
+      // 2. Module integrity
+      const srcDir = path.join(config.projectDir, 'src');
+      const requiredModules = ['types.ts', 'config.ts', 'notifications.ts', 'reports.ts', 'agents.ts', 'tools.ts', 'index.ts'];
+      const missing = requiredModules.filter(f => !fs.existsSync(path.join(srcDir, f)));
+      if (missing.length === 0) {
+        results.push('✅ Modules: All 7 source files present');
+      } else {
+        results.push('❌ Modules: Missing — ' + missing.join(', '));
+      }
+      
+      // 3. Orphaned helper scripts
+      const rootFiles = fs.readdirSync(config.projectDir);
+      const orphans = rootFiles.filter(f => 
+        f.endsWith('.cjs') || f.endsWith('.mjs') || 
+        (f.endsWith('.py') && !f.includes('package')) ||
+        f === 'nul' || f.startsWith('_fix') || f.startsWith('_replace') ||
+        f.startsWith('do_') || f.startsWith('fix_') || f.startsWith('tmp_')
+      );
+      if (orphans.length === 0) {
+        results.push('✅ Clean: No orphaned scripts in root');
+      } else {
+        results.push('⚠️ Orphans: ' + orphans.length + ' helper script(s) found');
+        for (const f of orphans) results.push('   - ' + f);
+        // Auto-move to archive
+        const archiveDir = path.join(config.projectDir, 'tasks', 'archive');
+        if (!fs.existsSync(archiveDir)) fs.mkdirSync(archiveDir, { recursive: true });
+        for (const f of orphans) {
+          try {
+            fs.renameSync(path.join(config.projectDir, f), path.join(archiveDir, f));
+          } catch {}
+        }
+        results.push('   → Moved to tasks/archive/');
+      }
+      
+      // 4. Dist exists
+      const distExists = fs.existsSync(path.join(config.projectDir, 'dist', 'index.js'));
+      results.push(distExists ? '✅ Dist: index.js exists' : '❌ Dist: index.js MISSING — run npx tsc');
+      
+      // 5. Config valid JSON
+      try {
+        JSON.parse(fs.readFileSync(path.join(config.projectDir, 'config.json'), 'utf-8'));
+        results.push('✅ Config: Valid JSON');
+      } catch {
+        results.push('❌ Config: Invalid JSON');
+      }
+      
+      results.push('');
+      const ok = !results.some(l => l.startsWith('❌'));
+      results.push(ok ? '✅ All checks passed.' : '❌ Some checks failed. Fix issues before next dispatch.');
+      
+      return { content: [{ type: 'text' as const, text: results.join('\n') }] };
     }
 
   } catch (e: any) {

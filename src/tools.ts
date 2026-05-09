@@ -60,5 +60,10 @@ export function getToolDefinitions() {
       description: 'Check AutoClaude status and current configuration.',
       inputSchema: { type: 'object' as const, properties: {} },
     },
+    {
+      name: 'verify_project',
+      description: 'Verify project health: TypeScript compilation, module integrity, orphaned helper scripts. Run this after each task dispatch to ensure the project is clean.',
+      inputSchema: { type: 'object' as const, properties: {} },
+    },
   ];
 }

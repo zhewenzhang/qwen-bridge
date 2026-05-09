@@ -138,6 +138,23 @@ Every task file should:
 5. End with a `## Checklist` for the agent to verify
 6. Specify `## Phase N: Commit and Push` as the final step
 
+### Task Quality Rules (from failure analysis)
+
+Based on 15 dispatched tasks, these rules prevent the 7 known failure patterns:
+
+1. **<200 lines** — Tasks over 400 lines fail 60% of the time. Split large tasks.
+2. **Exact code, not descriptions** — Provide the exact replacement text, not "change X to Y style"
+3. **One file per phase** — If a phase touches 3+ files, split into sub-phases
+4. **Forbid helper scripts** — Agent MUST edit files directly. Do NOT write .cjs/.mjs/.py scripts to "do the edits"
+5. **Require build verification** — Every phase MUST end with: verify `npx tsc` passes before continuing
+6. **Forbid config refactoring** — Only change config.json when the task EXPLICITLY asks for config changes
+7. **Single goal per task** — If the task description contains "and also", split it
+
+### Cleanup Rule
+After every task completion, Claude MUST check for and remove orphaned helper scripts:
+- `ls *.cjs *.mjs *.py 2>/dev/null` in project root
+- Move any found to `tasks/archive/`
+
 ### Emergency Exception
 
 If the bridge itself is broken and cannot dispatch, Claude may do direct fixes. This MUST be:
