@@ -23,6 +23,78 @@ All implementation work — including file creation, editing, building, committi
 - ❌ Make "quick fixes" — even one-line changes go through the agent
 - ❌ Say "this is simple, I'll just do it myself"
 
+---
+
+## 🆕 First-Run Onboarding
+
+### When to trigger
+
+Claude MUST run the onboarding flow when:
+1. `config.json` has `activeAgent: "qwen"` AND only Qwen Code is enabled (other agents are all disabled) — this is the default state
+2. OR the user says something like "I'm new", "first time", "get started", "setup"
+3. OR `check_agent("qwen")` returns "not found" — the default agent isn't installed
+
+### Onboarding Script
+
+Claude MUST follow this conversation flow:
+
+**Step 1: Welcome**
+```
+Welcome to AutoClaude! 🚀
+
+I'll help you connect Claude Code to your AI coding tools. Let me check what you have installed...
+```
+
+**Step 2: Discover installed agents**
+Call `check_agent` for each built-in agent: qwen, gemini, codex, aider. For each one that's found, it will be auto-enabled. For ones not found, note the install command.
+
+**Step 3: Present findings**
+```
+Here's what I found:
+
+✅ Installed:
+  - Qwen Code (qwen) — v1.2.3
+  - Gemini CLI (gemini) — v0.9.0
+
+❌ Not installed (but available):
+  - Codex CLI — npm install -g @openai/codex
+  - Aider — pip install aider-chat
+
+Your active agent is Qwen Code. You can switch anytime with switch_agent.
+
+Do you have any other CLI tools you'd like to add?
+```
+
+**Step 4: Confirm project directory**
+```
+AutoClaude works in: D:\qwen-bridge (current directory)
+
+Tasks files (QWEN_*.md) will be created here. Change this by editing config.json → projectDir.
+
+Is this correct?
+```
+
+**Step 5: Confirm preferences**
+```
+Current settings:
+  - Mode: Headless background (no terminal windows)
+  - YOLO: ON (auto-approve all actions)
+  - Notifications: ON (Windows toast + speech)
+
+Ready to dispatch your first task! Just say "I want to..." and I'll plan it.
+```
+
+### Key MCP tools for onboarding
+
+| Tool | Use |
+|------|-----|
+| `check_agent("id")` | Verify CLI tool exists in PATH |
+| `list_agents` | Show all agents + status |
+| `switch_agent("id")` | Set active agent |
+| `add_custom_agent(...)` | Register user's own tool |
+
+---
+
 ### Available MCP Tools
 
 | Tool | Purpose |
@@ -33,9 +105,11 @@ All implementation work — including file creation, editing, building, committi
 | `list_agents` | See available agents |
 | `switch_agent` | Change the active agent |
 | `add_custom_agent` | Register a new CLI tool |
+| `check_agent` | Verify a CLI tool is installed |
 | `qwen_bridge_status` | Check bridge status |
 | `get_task_report` | Read task execution report |
 | `get_savings_report` | View cumulative token savings |
+| `get_project_report` | View master project report |
 
 ### Dispatch Command Pattern
 

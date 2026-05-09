@@ -783,6 +783,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         'Read the master project report (PROJECT_REPORT.md) showing cumulative task history, token savings, and role breakdown.',
       inputSchema: { type: 'object' as const, properties: {} },
     },
+    {
+      name: 'check_agent',
+      description:
+        'Verify whether a CLI agent command exists in the system PATH. ' +
+        'Returns the command path and version info if found. ' +
+        'Use this during onboarding to check which tools the user has installed.',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          agent_id: {
+            type: 'string',
+            description: 'The agent ID to check (e.g., "qwen", "gemini", "codex"). Uses the command from config.agents[id].command.',
+          },
+        },
+        required: ['agent_id'],
+      },
+    },
   ],
 }));
 
@@ -1251,6 +1268,86 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const report = fs.readFileSync(reportPath, 'utf-8');
     return {
       content: [{ type: 'text' as const, text: report }],
+    };
+  }
+
+  // -- check_agent ------------------------------------------------------------
+  if (request.params.name === 'check_agent') {
+    const { agent_id } = request.params.arguments as { agent_id: string };
+
+    if (!config.agents[agent_id]) {
+      return {
+        content: [{ type: 'text' as const, text: `❌ Unknown agent: "${agent_id}". Available: ${Object.keys(config.agents).join(', ')}` }],
+        isError: true,
+      };
+    }
+
+    const agent = config.agents[agent_id];
+    const command = agent.command;
+
+    let found = false;
+    let path_info = '';
+    let version_info = '';
+
+    try {
+      const whereResult = execSync(`where ${command}`, { timeout: 3000, encoding: 'utf-8', stdio: 'pipe' });
+      found = true;
+      path_info = whereResult.trim().split('\n')[0];
+    } catch {
+      found = false;
+    }
+
+    if (found) {
+      try {
+        const versionCmds: Record<string, string> = {
+          qwen: `${command} --version`,
+          gemini: `${command} --version`,
+          codex: `${command} --version`,
+          aider: `${command} --version`,
+          opencode: `${command} --version`,
+          cline: `${command} --version`,
+        };
+        const vCmd = versionCmds[agent_id] || `${command} --version`;
+        version_info = execSync(vCmd, { timeout: 5000, encoding: 'utf-8', stdio: 'pipe' }).trim().split('\n')[0].substring(0, 80);
+      } catch {
+        version_info = '(version check failed)';
+      }
+    }
+
+    const installHint = (agent as any).installHint || `Install ${command}`;
+
+    // Auto-enable if found and currently disabled
+    if (found && agent.enabled === false) {
+      agent.enabled = true;
+      saveConfig(config);
+    }
+
+    const agentName = agent.name || (agent as any).label || agent_id;
+    const lines = [
+      found
+        ? `✅ **${agentName}** is installed`
+        : `❌ **${agentName}** is NOT installed`,
+      '',
+      `| Field | Value |`,
+      `|-------|-------|`,
+      `| Command | \`${command}\` |`,
+      `| Found | ${found ? 'Yes ✅' : 'No ❌'} |`,
+    ];
+
+    if (found && path_info) lines.push(`| Path | \`${path_info}\` |`);
+    if (found && version_info) lines.push(`| Version | ${version_info} |`);
+    if (!found) lines.push(`| Install | \`${installHint}\` |`);
+    if (found && agent.type === 'clipboard') {
+      lines.push(`| Type | Clipboard (no CLI pipe) |`);
+    }
+
+    lines.push('');
+    lines.push(found
+      ? `✅ Ready to use. Auto-enabled in config.`
+      : `💡 Install with: \`${installHint}\`, then run \`check_agent("${agent_id}")\` again.`);
+
+    return {
+      content: [{ type: 'text' as const, text: lines.join('\n') }],
     };
   }
 
