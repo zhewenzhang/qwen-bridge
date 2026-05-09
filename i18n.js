@@ -166,6 +166,10 @@ function updateAllText() {
     const text = t(el.getAttribute('data-i18n'));
     if (text) el.innerHTML = text;
   });
+  document.querySelectorAll('[data-i18n-nav]').forEach(el => {
+    const text = t(el.getAttribute('data-i18n-nav'));
+    if (text) el.textContent = text;
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => { updateAllText(); updateLangToggle(); });
