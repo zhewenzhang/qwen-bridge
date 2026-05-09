@@ -4,6 +4,43 @@
 
 ---
 
+## v6.0 — Roadmap (Planned)
+
+**Target**: Enhanced planning + parallel execution + quality gates
+
+### Planning Layer
+- 🧠 Superpowers Skills integration (brainstorming → writing-plans → dispatch)
+- 📋 Task template library (feature, bugfix, refactor, test, deploy) ← **DONE**
+- 🤝 Multi-model planning review (Gemini CLI reviews Claude's plans)
+
+### Execution Layer
+- ⚡ Parallel dispatch (multiple agents simultaneously)
+- 🔄 Incremental edit mode (Aider-style diff/patch)
+- 🔁 Auto-retry on failure (max 3 attempts)
+- 🏗️ CI integration (GitHub Actions trigger on push)
+
+### Quality Layer
+- 🔍 Diff review in verify_project ← **DONE**
+- 📊 Verification report ← **DONE**
+- 🔒 Security scan for secrets, SQL injection, XSS
+- 🧪 Auto-test runner integration
+
+---
+
+## v5.5 — verify_project + Templates + Verification Report (2026-05-09)
+
+**Planner**: Claude Code | **Executor**: Claude Code + Qwen Code
+
+- 🩺 `verify_project` tool — 6 checks: TS, modules, orphans, dist, config, git diff
+- 📏 CLAUDE.md task quality rules (7 rules from failure analysis of 15 tasks)
+- 📋 5 task templates: feature, bugfix, refactor, test, deploy
+- 🧠 CLAUDE.md Superpowers Skills integration guide
+- 📊 VERIFICATION_REPORT.md — complete system verification
+- 📈 v6.0 roadmap published in CHANGELOG
+- 🐛 Fix: verify_project handler missing in index.ts (multi-file coordination bug #8)
+
+---
+
 ## v5.5 — NPM Package + Auth Verification (2026-05-09)
 
 **Planner**: Claude Code | **Executor**: Qwen Code

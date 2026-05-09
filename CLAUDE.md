@@ -93,6 +93,31 @@ Ready to dispatch your first task! Just say "I want to..." and I'll plan it.
 | `switch_agent("id")` | Set active agent |
 | `add_custom_agent(...)` | Register user's own tool |
 
+### Superpowers Skills Integration
+
+When planning complex tasks, Claude SHOULD invoke these skills BEFORE writing the task file:
+
+| Skill | When to Use | Purpose |
+|-------|------------|---------|
+| `superpowers:brainstorming` | Before any creative/design work | Explore alternatives, validate approach |
+| `superpowers:writing-plans` | Multi-step implementation | Generate structured plan before task file |
+| `superpowers:systematic-debugging` | Bug fix tasks | Root cause analysis before coding |
+| `superpowers:verification-before-completion` | Before claiming "done" | Run verify_project, check results |
+
+**Integration flow:**
+
+```
+1. User requests feature/bugfix
+2. Claude invokes brainstorming → validates approach
+3. Claude invokes writing-plans → generates structured plan
+4. Claude converts plan → QWEN_*.md task file (using templates/)
+5. Claude dispatches → Qwen Code executes
+6. Qwen Code completes → Claude runs verify_project
+7. Claude checks diff review → reports to user
+```
+
+This ensures every task follows the **Plan → Template → Dispatch → Verify → Report** cycle.
+
 ---
 
 ### Available MCP Tools

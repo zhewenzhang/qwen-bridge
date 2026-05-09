@@ -166,6 +166,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       else { results.push('⚠️ Found ' + orphans.length + ' orphan(s), auto-cleaned'); const ad = path.join(config.projectDir, 'tasks', 'archive'); if (!fs.existsSync(ad)) fs.mkdirSync(ad, { recursive: true }); for (const f of orphans) { try { fs.renameSync(path.join(config.projectDir, f), path.join(ad, f)); } catch {} } }
       results.push(fs.existsSync(path.join(config.projectDir, 'dist', 'index.js')) ? '✅ Dist: index.js exists' : '❌ Dist: MISSING');
       try { JSON.parse(fs.readFileSync(path.join(config.projectDir, 'config.json'), 'utf-8')); results.push('✅ Config: Valid JSON'); } catch { results.push('❌ Config: Invalid JSON'); }
+      try {
+        const diffOutput = execSync('git diff --stat HEAD~1', { timeout: 5000, encoding: 'utf-8', stdio: 'pipe', cwd: config.projectDir });
+        const diffLines = diffOutput.trim().split('\n');
+        const lastLine = diffLines[diffLines.length - 1] || '';
+        results.push('📊 Diff: ' + lastLine.trim());
+        if (diffLines.length > 11) results.push('⚠️ Large change: ' + (diffLines.length - 1) + ' files modified');
+      } catch { results.push('📊 Diff: (no previous commit)'); }
       results.push('');
       results.push(results.some(l => l.startsWith('❌')) ? '❌ Issues found. Fix before next dispatch.' : '✅ All checks passed.');
       return { content: [{ type: 'text' as const, text: results.join('\n') }] };
