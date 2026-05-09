@@ -139,7 +139,7 @@ Add this to your Claude Code settings (`~/.claude/settings.json` or project `.cl
   "mcpServers": {
     "autoclaude": {
       "command": "node",
-      "args": ["D:\\AutoClaude\\dist\\index.js"],
+      "args": ["<path-to-AutoClaude>\\dist\\index.js"],
       "env": {}
     }
   }

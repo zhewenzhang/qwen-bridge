@@ -171,7 +171,7 @@ npm install && npm run build
   "mcpServers": {
     "autoclaude": {
       "command": "node",
-      "args": ["D:\\AutoClaude\\dist\\index.js"],
+      "args": ["<path-to-AutoClaude>\\dist\\index.js"],
       "env": {}
     }
   }
