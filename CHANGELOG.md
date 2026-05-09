@@ -4,6 +4,17 @@
 
 ---
 
+## v5.5 — NPM Package + Auth Verification (2026-05-09)
+
+**Planner**: Claude Code | **Executor**: Qwen Code
+
+- 📦 NPM publishing config — `npm install -g autoclaude`
+- 🔐 `verify_agent_auth` tool — pre-flight auth check before dispatching
+- 🔍 Auto-detects auth errors, rate limits, missing installations
+- 📋 Guides user through auth setup for each agent
+
+---
+
 ## v5.4 — First-Run Onboarding (2026-05-09)
 
 **Planner**: Claude Code | **Executor**: Qwen Code

@@ -1,13 +1,58 @@
 {
   "name": "autoclaude",
-  "description": "AutoClaude — Seamlessly connect Claude Code to Qwen Code & Cursor. Plan with Claude, execute elsewhere.",
-  "version": "1.0.0",
-  "private": true,
+  "version": "5.4.0",
+  "description": "AutoClaude — Plan with Claude, Execute Everywhere. MCP bridge connecting Claude Code to Qwen Code, Gemini CLI, and more.",
+  "private": false,
   "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "autoclaude": "./dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "config.json",
+    "README.md",
+    "README_CN.md",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "i18n.js",
+    "index.html"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "coding",
+    "agent",
+    "qwen",
+    "gemini",
+    "codex",
+    "aider",
+    "bridge",
+    "automation",
+    "token-savings",
+    "headless"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhewenzhang/AutoClaude.git"
+  },
+  "homepage": "https://github.com/zhewenzhang/AutoClaude#readme",
+  "bugs": {
+    "url": "https://github.com/zhewenzhang/AutoClaude/issues"
+  },
+  "license": "MIT",
+  "author": "zhewenzhang",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

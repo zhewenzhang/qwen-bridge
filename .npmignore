@@ -1,0 +1,11 @@
+src/
+node_modules/
+.claude/
+*.log
+QWEN_*.md
+QWEN_*_result.log
+QWEN_*_summary.md
+test_*.cjs
+test_*.js
+_*
+nul

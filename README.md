@@ -116,51 +116,21 @@ Every task is automatically tracked. Use `get_savings_report` in Claude to see y
 
 ## Installation
 
+### Quick Install (NPM)
+
+```bash
+npm install -g autoclaude
+```
+
+### From GitHub
+
 ```bash
 git clone https://github.com/zhewenzhang/AutoClaude.git
 cd AutoClaude
-npm install
-npm run build
+npm install && npm run build
 ```
 
-## Configuration
-
-Edit `config.json`. See the [agents structure](config.json) for the full multi-agent configuration:
-
-```json
-{
-  "projectDir": "D:\\your-project",
-  "qwenCommand": "qwen",
-  "cursorCommand": "cursor",
-  "activeAgent": "qwen",
-  "agents": {
-    "qwen": { "command": "qwen", "yoloFlag": "-y", "type": "cli" },
-    "gemini": { "command": "gemini", "yoloFlag": "--yolo", "type": "cli" },
-    "codex": { "command": "codex", "yoloFlag": "--approval-mode yolo", "type": "cli" },
-    "cursor": { "command": "cursor", "type": "clipboard" }
-  },
-  "terminalApp": "wt.exe",
-  "notifyOnDispatch": true,
-  "speechOnDispatch": true,
-  "speechText": "AutoClaude task dispatched",
-  "showTerminal": false,
-  "yoloMode": true
-}
-```
-
-| Field | Default | Description |
-|-------|---------|-------------|
-| `projectDir` | — | Project working directory — task file paths are relative to this |
-| `qwenCommand` | `qwen` | CLI command for Qwen Code |
-| `cursorCommand` | `cursor` | CLI command for Cursor |
-| `terminalApp` | `wt.exe` | Terminal emulator (only used when `showTerminal` is on) |
-| `notifyOnDispatch` | `true` | Show a Windows toast notification on dispatch |
-| `speechOnDispatch` | `true` | Play a voice alert on dispatch |
-| `speechText` | `"AutoClaude task dispatched"` | The phrase spoken aloud |
-| `showTerminal` | `false` | **New in v4.0** — Set to `true` to open a visible Windows Terminal tab instead of running headless |
-| `yoloMode` | `true` | **New in v4.0** — Auto-approve all Qwen Code actions (no confirmation prompts) |
-
-## Register with Claude Code
+### Configure MCP in Claude Code
 
 Add this to your Claude Code settings (`~/.claude/settings.json` or project `.claude/settings.json`):
 

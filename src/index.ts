@@ -800,6 +800,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['agent_id'],
       },
     },
+    {
+      name: 'verify_agent_auth',
+      description:
+        'Check if the active (or specified) agent can authenticate and run successfully. ' +
+        'Sends a minimal test prompt to the agent and checks if it responds correctly. ' +
+        'If auth fails, returns the error message so Claude can guide the user. ' +
+        'Use this before dispatching important tasks to ensure the agent is ready.',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          agent_id: {
+            type: 'string',
+            description: 'Optional. The agent ID to verify. Defaults to the active agent.',
+          },
+        },
+      },
+    },
   ],
 }));
 
@@ -1345,6 +1362,132 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     lines.push(found
       ? `✅ Ready to use. Auto-enabled in config.`
       : `💡 Install with: \`${installHint}\`, then run \`check_agent("${agent_id}")\` again.`);
+
+    return {
+      content: [{ type: 'text' as const, text: lines.join('\n') }],
+    };
+  }
+
+  // -- verify_agent_auth ----------------------------------------------------
+  if (request.params.name === 'verify_agent_auth') {
+    const { agent_id } = (request.params.arguments || {}) as { agent_id?: string };
+    const targetId = agent_id || config.activeAgent;
+
+    if (!config.agents[targetId]) {
+      return {
+        content: [{ type: 'text' as const, text: `Unknown agent: "${targetId}"` }],
+        isError: true,
+      };
+    }
+
+    const agent = config.agents[targetId];
+
+    if (agent.type === 'clipboard') {
+      return {
+        content: [{
+          type: 'text' as const,
+          text: [
+            `${agent.name || agent.label || targetId} is a clipboard-based tool.`,
+            '',
+            'Auth verification is not applicable. Task content is copied to clipboard -- the user authenticates in the GUI app.',
+          ].join('\n'),
+        }],
+      };
+    }
+
+    // Run a minimal test: pipe test prompt to the agent
+    const testPrompt = 'Say "AUTOCLAUDE_AUTH_OK" only. Do not create files. Do not run commands.';
+    const tmpFile = path.join(os.tmpdir(), '_ac_auth_test.txt');
+    fs.writeFileSync(tmpFile, testPrompt, 'utf-8');
+
+    const yoloFlag = agent.yoloMode ? ((agent as any).yoloFlag || '-y') : '';
+    const outputFlag = (agent as any).outputFlag || '';
+    const cmd = `type "${tmpFile}" | ${agent.command} ${yoloFlag} ${outputFlag}`.trim();
+
+    let result = '';
+    let error = '';
+    let timedOut = false;
+
+    try {
+      result = execSync(cmd, { timeout: 30000, encoding: 'utf-8', stdio: 'pipe', shell: 'cmd.exe' });
+    } catch (e: any) {
+      error = e.stderr || e.stdout || e.message || 'Unknown error';
+      if (e.killed) timedOut = true;
+    }
+
+    try { fs.unlinkSync(tmpFile); } catch {}
+
+    const success = result.includes('AUTOCLAUDE_AUTH_OK');
+
+    if (success) {
+      return {
+        content: [{
+          type: 'text' as const,
+          text: [
+            'Auth Verified',
+            '',
+            `Agent   : ${agent.name || targetId}`,
+            `Status  : Authenticated and Ready`,
+            `Command : ${agent.command}`,
+            '',
+            `${agent.name || targetId} is authenticated and responding. Ready to dispatch tasks.`,
+          ].join('\n'),
+        }],
+      };
+    }
+
+    // Auth failed -- analyze the error
+    const isAuthError = /auth|login|api.key|unauthorized|401|403|token/i.test(error);
+    const isRateLimit = /rate.limit|429|quota/i.test(error);
+    const isNotInstalled = /not.found|not.recognized|enoent/i.test(error);
+
+    const lines = [
+      'Auth Verification Failed',
+      '',
+      `Agent   : ${agent.name || targetId}`,
+      `Status  : ${timedOut ? 'Timed Out (30s)' : 'Failed'}`,
+      '',
+    ];
+
+    if (timedOut) {
+      lines.push('The agent did not respond within 30 seconds. Possible issues:');
+      lines.push('- The agent may be waiting for interactive input');
+      lines.push('- The agent may require login/auth before use');
+      lines.push('- Run check_agent("' + targetId + '") to verify the CLI is installed');
+    } else if (isAuthError) {
+      lines.push('**Authentication Required**');
+      lines.push('');
+      lines.push('The agent returned an auth error. The user needs to authenticate:');
+      lines.push('');
+      lines.push('```');
+      lines.push(error.substring(0, 300));
+      lines.push('```');
+      lines.push('');
+      lines.push('**Actions for the user:**');
+      if (targetId === 'gemini') lines.push('1. Run: `gemini auth` and follow the OAuth flow');
+      if (targetId === 'qwen') lines.push('1. Run: `qwen auth` and configure OpenRouter or API key');
+      if (targetId === 'codex') lines.push('1. Run: `codex auth` and login with OpenAI/ChatGPT');
+      lines.push('2. Then run verify_agent_auth("' + targetId + '") again to confirm');
+    } else if (isRateLimit) {
+      lines.push('**Rate Limit Hit**');
+      lines.push('');
+      lines.push('The agent is rate-limited. Wait a few minutes and try again.');
+      lines.push('');
+      lines.push('```');
+      lines.push(error.substring(0, 200));
+      lines.push('```');
+    } else if (isNotInstalled) {
+      lines.push('**Command Not Found**');
+      lines.push('');
+      lines.push(`The command \`${agent.command}\` is not in PATH.`);
+      lines.push(`Install: \`${(agent as any).installHint || 'Check the agent documentation'}\``);
+    } else {
+      lines.push('**Verification Failed**');
+      lines.push('');
+      lines.push('```');
+      lines.push(error.substring(0, 300) || '(no output)');
+      lines.push('```');
+    }
 
     return {
       content: [{ type: 'text' as const, text: lines.join('\n') }],
