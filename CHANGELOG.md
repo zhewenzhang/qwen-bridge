@@ -4,6 +4,29 @@
 
 ---
 
+## v5.7 — Desktop Popup + Session Discipline (2026-05-09)
+
+**Planner**: Claude Code | **Executor**: Qwen Code
+
+- 🪟 `user_prompt` tool — desktop popup dialogs (input/confirm/alert)
+- 📊 `session_status` tool — live session token tracking
+- 📝 Auto session recording on task finalize
+- 📋 CLAUDE.md mandatory task closeout protocol
+- 🔇 `windowsHide:true` — zero terminal windows during dispatch
+
+---
+
+## v5.6 — Interactive Task Sessions (2026-05-09)
+
+**Planner**: Claude Code | **Executor**: Qwen Code
+
+- 🔍 `task_preflight` tool — pre-dispatch checks (agent, git, gh, npm auth)
+- 🔄 `task_continue` tool — create continuation task for blocked tasks
+- 🔐 `check_task_status` tool — 10 auth/error pattern detection
+- 📋 CLAUDE.md pre-flight protocol + auth forwarding protocol
+
+---
+
 ## v6.0 — Roadmap (Planned)
 
 **Target**: Enhanced planning + parallel execution + quality gates
