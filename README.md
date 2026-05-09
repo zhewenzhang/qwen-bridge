@@ -8,7 +8,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-green?logo=node.js)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Version](https://img.shields.io/badge/version-5.0.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
+[![Version](https://img.shields.io/badge/version-5.2.0-brightgreen)](https://github.com/zhewenzhang/AutoClaude)
 
 ---
 
@@ -18,19 +18,30 @@ AutoClaude is an **MCP (Model Context Protocol) Server** that gives Claude Code 
 
 Claude handles strategy and planning. AutoClaude fires off execution tasks silently in the background. Each tool uses its own token pool, so Claude stays lean while heavy lifting happens elsewhere.
 
-| Tool | What it does |
-|------|-------------|
-| `dispatch_to_qwen` | Pipes a task file to the active CLI agent running headless in the background with YOLO (auto-approve) mode. Zero interaction needed. |
-| `dispatch_task` | Unified dispatch to the active agent. |
-| `list_agents` | Show all available agents. |
-| `switch_agent` | Switch the active agent. |
-| `add_custom_agent` | Register a custom CLI tool. |
-| `dispatch_to_cursor` | Copies task content to clipboard so you can paste it into Cursor AI chat. Optionally launches Cursor. |
-| `qwen_bridge_status` | Prints current config and confirms AutoClaude is alive. |
-| `get_task_report` | Reads the standardized _summary.md execution report for a dispatched task. |
-| `get_savings_report` | **New in v4.2** — Shows cumulative token and cost savings across all tasks. |
+| Tool | Type | Description |
+|------|------|-------------|
+| `dispatch_task` | **Unified** | Dispatch to the currently active agent |
+| `dispatch_to_qwen` | Legacy | Dispatch specifically to Qwen Code |
+| `dispatch_to_cursor` | Legacy | Copy task to clipboard for Cursor |
+| `list_agents` | Agent Mgmt | List all available agents + status |
+| `switch_agent` | Agent Mgmt | Switch the active agent |
+| `add_custom_agent` | Agent Mgmt | Register a custom CLI tool |
+| `get_task_report` | Reports | Read standardized execution report |
+| `get_savings_report` | Reports | View cumulative token & cost savings |
+| `qwen_bridge_status` | System | Check bridge status + config |
 
 **The workflow**: Claude plans the architecture, writes detailed task files (`QWEN_*.md` / `CURSOR_*.md`), then dispatches them. Qwen Code executes silently in the background, or Cursor picks up the clipboard content. **Claude tokens stay free for planning.**
+
+## Project Discipline
+
+AutoClaude enforces a strict **Planner-Executor separation** via `CLAUDE.md`:
+
+| Role | System | Allowed Actions |
+|------|--------|----------------|
+| **Planner** | Claude Code | Read files, design architecture, write task files (QWEN_*.md), dispatch, verify |
+| **Executor** | AI Agent (Qwen Code, etc.) | File edits, git commits, builds, deployments — all execution |
+
+> Claude Code reads `CLAUDE.md` on startup and follows these rules automatically. Even one-line fixes go through the agent.
 
 ## Multi-Agent Support (v5.0)
 
@@ -268,24 +279,43 @@ The `_summary.md` follows a fixed structure:
 
 Claude can call `get_task_report("QWEN_EXAMPLE.md")` to read the summary without opening files manually. Use `qwen_bridge_status` to confirm the bridge is running.
 
-## How the Dispatch Works (Under the Hood)
+## Terminal Output (v5.2)
 
-### Qwen Code (v4.0 headless)
+All bridge responses use Unicode box-drawing and emoji for clarity:
 
 ```
-1. Claude calls dispatch_to_qwen("task.md")
+┌─────────────────────────────────────────────────────┐
+│              AutoClaude v5.2 — Status               │
+├─────────────────────────────────────────────────────┤
+│  Active Agent : Qwen Code                           │
+│  YOLO Mode    : ✅ ON                               │
+│  Terminal     : headless background                │
+├─────────────────────────────────────────────────────┤
+│  Agents       : 1 enabled / 7 total                │
+│  💰 Savings   : 0 tasks · 0 tokens · $0.00         │
+└─────────────────────────────────────────────────────┘
+```
+
+## How Dispatch Works (Under the Hood)
+
+### Qwen Code (v5.2 headless background)
+
+```
+1. Claude calls dispatch_task("task.md") or dispatch_to_qwen("task.md")
         │
 2. AutoClaude validates the file exists
         │
 3. Sends Windows toast notification + speech alert
         │
-4. Reads task file content, spawns: qwen -y --output-format text
+4. Spawns the active agent headlessly in the background with YOLO auto-approve
         │
-5. Pipes task content to qwen's stdin, captures stdout/stderr to task_result.log
+5. Pipes task file content as a batch to the agent's stdin
+   Captures stdout/stderr to TASK_NAME_result.log
         │
 6. AutoClaude returns "✅ Dispatched" to Claude immediately
         │
-7. Claude is free. Qwen Code runs headless in the background with YOLO auto-approval.
+7. Claude is free. The agent runs headless in the background with YOLO auto-approval.
+   Output is written to TASK_NAME_result.log and a structured TASK_NAME_summary.md.
 ```
 
 ### Cursor
@@ -349,6 +379,10 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node dist/index.js
 ## Author
 
 Created by [ @zhewenzhang](https://github.com/zhewenzhang)
+
+## Contributing
+
+This project follows a strict **Planner-Executor workflow**. See [CLAUDE.md](CLAUDE.md) for the AI agent rules. Contributions are dispatched through the bridge — not committed directly.
 
 ## License
 
