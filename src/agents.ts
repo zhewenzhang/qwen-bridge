@@ -49,10 +49,11 @@ export function runCliAgent(config: BridgeConfig, taskPath: string, taskName: st
     return;
   }
 
-  // Headless mode
+  // Headless mode — bat file with -p flag to force qwen exit after completion
   const tmpTaskFile = path.join(os.tmpdir(), `_ac_task_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.txt`);
   fs.writeFileSync(tmpTaskFile, fullContent, 'utf-8');
-  const agentFlags = [agent.yoloMode ? (agent.yoloFlag || '-y') : '', agent.outputFlag || ''].filter(Boolean).join(' ');
+  // Use -p flag to run qwen in one-shot mode (exits after completion instead of entering interactive mode)
+  const agentFlags = [(agent.yoloMode ? (agent.yoloFlag || '-y') : ''), (agent.outputFlag || ''), '-p'].filter(Boolean).join(' ');
   const batFile = path.join(os.tmpdir(), `_ac_run_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.bat`);
   fs.writeFileSync(batFile, ['@echo off', `cd /d "${config.projectDir}"`, `type "${tmpTaskFile}" | ${agent.command} ${agentFlags} > "${resultLog}" 2>&1`].join('\r\n') + '\r\n');
   spawn('cmd.exe', ['/c', batFile], { detached: true, stdio: 'ignore', shell: false, windowsHide: true }).unref();
