@@ -34,11 +34,10 @@ export function runCliAgent(config: BridgeConfig, taskPath: string, taskName: st
     fs.writeFileSync(ps1Path, bom + [
       `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
       `Write-Host ''`,
-      `Write-Host '========================================' -ForegroundColor Cyan`,
-      `Write-Host '  AutoClaude — Task Dispatched' -ForegroundColor Cyan`,
+      `Write-Host '\u2500\u2500 AutoClaude \u2014 Task Dispatched \u2500\u2500' -ForegroundColor Cyan`,
       `Write-Host '  Agent: ${(agent.label || agent.name || '').replace(/'/g, "''")}' -ForegroundColor White`,
       `Write-Host '  File: ${path.basename(taskPath).replace(/'/g, "''")}' -ForegroundColor White`,
-      `Write-Host '========================================' -ForegroundColor Cyan`,
+      `Write-Host '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500' -ForegroundColor Cyan`,
       `Write-Host ''`,
       `Get-Content '${taskPath.replace(/'/g, "''")}' -Raw | & ${agent.command}${yoloFlag ? ' ' + yoloFlag : ''}${agent.outputFlag ? ' ' + agent.outputFlag : ''}`,
     ].join('\n') + '\n', 'utf-8');
