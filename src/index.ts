@@ -93,6 +93,8 @@ interface AgentConfig {
   yoloMode: boolean;
   showTerminal: boolean;
   label: string;
+  enabled?: boolean;
+  type?: string;
 }
 
 interface BridgeConfig {
@@ -103,6 +105,7 @@ interface BridgeConfig {
   speechText: string;
   activeAgent: string;
   agents: Record<string, AgentConfig>;
+  showTerminal?: boolean;
 }
 
 function loadConfig(): BridgeConfig {
@@ -119,6 +122,8 @@ function loadConfig(): BridgeConfig {
       yoloMode: true,
       showTerminal: false,
       label: 'Qwen Code',
+      enabled: true,
+      type: 'cli',
     },
     cursor: {
       name: 'cursor',
@@ -127,8 +132,46 @@ function loadConfig(): BridgeConfig {
       yoloMode: false,
       showTerminal: false,
       label: 'Cursor AI',
+      enabled: true,
+      type: 'clipboard',
     },
   };
+
+  // Merge config.json agents over defaults
+  const mergedAgents: Record<string, AgentConfig> = { ...defaultAgents };
+  for (const [id, override] of Object.entries(raw.agents ?? {})) {
+    const base = mergedAgents[id];
+    const ov = override as Record<string, any>;
+    if (base) {
+      mergedAgents[id] = {
+        ...base,
+        name: ov.name ?? base.name,
+        command: ov.command ?? base.command,
+        args: ov.args ?? base.args,
+        yoloMode: ov.yoloMode ?? base.yoloMode,
+        showTerminal: ov.showTerminal ?? base.showTerminal,
+        label: ov.label ?? ov.name ?? base.label,
+        enabled: ov.enabled ?? base.enabled,
+        type: ov.type ?? base.type,
+      };
+    } else {
+      mergedAgents[id] = {
+        name: ov.name ?? id,
+        command: ov.command ?? id,
+        args: ov.args ?? [],
+        yoloMode: Boolean(ov.yoloMode),
+        showTerminal: Boolean(ov.showTerminal),
+        label: ov.label ?? ov.name ?? id,
+        enabled: ov.enabled ?? true,
+        type: ov.type ?? 'cli',
+      };
+    }
+  }
+
+  // Phase 1: Ensure every agent has a label (fallback to name)
+  for (const agent of Object.values(mergedAgents)) {
+    if (!agent.label) agent.label = agent.name;
+  }
 
   return {
     terminalApp: 'wt.exe',
@@ -136,13 +179,21 @@ function loadConfig(): BridgeConfig {
     speechOnDispatch: true,
     speechText: 'AutoClaude task dispatched',
     activeAgent: 'qwen',
-    agents: defaultAgents,
     ...raw,
+    agents: mergedAgents,
   } as BridgeConfig;
 }
 
+// Phase 1: saveConfig strips derived fields (label is derived from name)
 function saveConfig(config: BridgeConfig): void {
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
+  const clean: Record<string, any> = { ...config };
+  const cleanAgents: Record<string, any> = {};
+  for (const [id, agent] of Object.entries(config.agents)) {
+    const { label, ...rest } = agent as any;
+    cleanAgents[id] = rest;
+  }
+  clean.agents = cleanAgents;
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(clean, null, 2), 'utf-8');
 }
 
 function getActiveAgent(config: BridgeConfig): AgentConfig {
@@ -204,25 +255,26 @@ function writeTaskSummary(
   agentLabel: string
 ): string {
   const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
+  // Phase 9: Beautify _summary.md format
   const header = [
-    `# Task Report: ${taskName}`,
+    `# 📋 Task Report: ${taskName}`,
     ``,
     `| Field | Value |`,
     `|-------|-------|`,
     `| **Task File** | \`${path.basename(taskPath)}\` |`,
     `| **Dispatched** | ${startTime.toISOString()} |`,
     `| **Agent** | ${agentLabel} |`,
-    `| **Mode** | Headless background + YOLO auto-approve |`,
+    `| **Mode** | 🤖 Headless + ⚡ YOLO Auto-Approve |`,
     ``,
     `---`,
     ``,
-    `## Role Separation`,
+    `## 👥 Role Separation`,
     ``,
-    `| Role | System | Responsibility |`,
-    `|------|--------|----------------|`,
-    `| Planner | Claude Code | Strategy, architecture design, task file authoring, final verification |`,
-    `| Dispatcher | AutoClaude (MCP Bridge) | Task validation, dispatching, notifications, output capture |`,
-    `| Executor | ${agentLabel} | File operations, git commits, builds, deployments — all execution work |`,
+    `| 🧠 Role | 💻 System | 📝 Responsibility |`,
+    `|---------|----------|-------------------|`,
+    `| **Planner** | Claude Code | Strategy, architecture, task authoring, verification |`,
+    `| **Dispatcher** | AutoClaude | Validation, dispatch, notification, cost tracking |`,
+    `| **Executor** | ${agentLabel} | File operations, git, builds, deployments |`,
     ``,
     `---`,
     ``,
@@ -269,7 +321,7 @@ function finalizeTaskSummary(
     ``,
     `---`,
     ``,
-    `## Token Economics`,
+    `## 💰 Token Economics`,
     ``,
     `| Metric | Claude (Planning) | ${agentLabel} (Execution) |`,
     `|--------|-------------------|-----------------------|`,
@@ -301,7 +353,7 @@ function finalizeTaskSummary(
     ``,
     `| Metric | Value |`,
     `|--------|-------|`,
-    `| **Status** | ${success ? 'Completed' : 'Check log'} |`,
+    `| **Status** | ${success ? '✅ Completed' : '⚠️ Check log'} |`,
     `| **Duration** | ${duration}s |`,
     `| **Started** | ${startTime.toISOString()} |`,
     `| **Ended** | ${endTime.toISOString()} |`,
@@ -309,7 +361,7 @@ function finalizeTaskSummary(
     ``,
     `---`,
     ``,
-    `## Result Preview`,
+    `## 📄 Result Preview`,
     ``,
     '```',
     resultContent.substring(0, 2000),
@@ -317,7 +369,7 @@ function finalizeTaskSummary(
     ``,
     `---`,
     ``,
-    `*Report generated by AutoClaude v5.0 — Plan with Claude, Execute Everywhere.*`,
+    `*Report generated by AutoClaude v5.2 — Plan with Claude, Execute Everywhere.*`,
   ].join('\n');
 
   try {
@@ -351,21 +403,33 @@ function finalizeTaskSummary(
 /** Run a CLI agent (Qwen Code, etc.) — headless background or visible terminal tab. */
 function runCliAgent(config: BridgeConfig, agent: AgentConfig, taskPath: string, taskName: string): void {
   const resultLog = taskPath.replace(/\.md$/, '_result.log');
-  const args = agent.yoloMode ? ['-y', '--output-format', 'text'] : ['--output-format', 'text'];
 
   if (agent.showTerminal) {
     const ps1Path = path.join(os.tmpdir(), `_bridge_${agent.name}_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.ps1`);
     const bom = '\uFEFF';
     const yoloFlag = agent.yoloMode ? ' -y' : '';
+        // Phase 8: Beautify terminal banner with Unicode boxes
+    const agentLabel = agent.label || agent.name;
+    const taskBaseName = path.basename(taskPath);
+
+    // Compute padded lines in TypeScript before embedding in PowerShell
+    const line1 = '\u2551        AutoClaude \u2014 Task Dispatched          \u2551';
+    const line2 = padStr('\u2551  Agent : ' + agentLabel, 44) + '\u2551';
+    const line3 = padStr('\u2551  File  : ' + taskBaseName, 44) + '\u2551';
+    const line4 = agent.yoloMode
+      ? padStr('\u2551  Mode  : \u26a1 YOLO Auto-Approve', 44) + '\u2551'
+      : padStr('\u2551  Mode  : \u26a0\ufe0f Manual Confirm', 44) + '\u2551';
+
     fs.writeFileSync(ps1Path, bom + [
       `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
       `Write-Host ''`,
-      `Write-Host '========================================' -ForegroundColor Yellow`,
-      `Write-Host '  AutoClaude — Task Dispatched' -ForegroundColor Yellow`,
-      `Write-Host '========================================' -ForegroundColor Yellow`,
-      `Write-Host '  File: ${taskPath.replace(/'/g, "''")}' -ForegroundColor Cyan`,
-      ...(agent.yoloMode ? [`Write-Host '  Mode: YOLO (auto-approve)' -ForegroundColor Green`] : []),
-      `Write-Host '========================================' -ForegroundColor Yellow`,
+      `Write-Host '\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557' -ForegroundColor Cyan`,
+      `Write-Host '${line1}' -ForegroundColor Cyan`,
+      `Write-Host '\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563' -ForegroundColor Cyan`,
+      `Write-Host '${line2}' -ForegroundColor White`,
+      `Write-Host '${line3}' -ForegroundColor White`,
+      `Write-Host '${line4}' -ForegroundColor ${agent.yoloMode ? 'Green' : 'Yellow'}`,
+      `Write-Host '\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d' -ForegroundColor Cyan`,
       `Write-Host ''`,
       `Get-Content '${taskPath.replace(/'/g, "''")}' -Raw | & ${agent.command}${yoloFlag} --output-format text`,
     ].join('\n') + '\n', 'utf-8');
@@ -428,18 +492,26 @@ function runCursor(config: BridgeConfig, taskPath: string, taskName: string, _cl
   if (cursorAgent.showTerminal) {
     const ps1Path = path.join(os.tmpdir(), `_bridge_cursor_${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.ps1`);
     const bom = '\uFEFF';
+        // Phase 8: Beautify Cursor terminal banner
+    const taskBaseName = path.basename(taskPath);
+    const cLine1 = '\u2551        AutoClaude \u2014 Task Dispatched          \u2551';
+    const cLine2 = padStr('\u2551  Task : ' + taskName.substring(0, 35), 46) + '\u2551';
+    const cLine3 = padStr('\u2551  File : ' + taskBaseName.substring(0, 35), 46) + '\u2551';
+    const cLine4 = padStr('\u2551  \u2705 Task content copied to CLIPBOARD', 46) + '\u2551';
+    const cLine5 = padStr('\u2551  \u27a1\ufe0f Open Cursor AI chat and press Ctrl+V', 46) + '\u2551';
+
     fs.writeFileSync(ps1Path, bom + [
       `Set-Location '${config.projectDir.replace(/'/g, "''")}'`,
       `Write-Host ''`,
-      `Write-Host '================================================' -ForegroundColor Cyan`,
-      `Write-Host '  AutoClaude — Task Dispatched' -ForegroundColor Cyan`,
-      `Write-Host '================================================' -ForegroundColor Cyan`,
-      `Write-Host '  Task : ${taskName.substring(0, 38)}' -ForegroundColor White`,
-      `Write-Host '  File : ${path.basename(taskPath).substring(0, 38)}' -ForegroundColor White`,
-      `Write-Host '================================================' -ForegroundColor Cyan`,
-      `Write-Host '  [OK] Task content copied to CLIPBOARD' -ForegroundColor Green`,
-      `Write-Host '  --> Open Cursor AI chat and press Ctrl+V' -ForegroundColor Yellow`,
-      `Write-Host '================================================' -ForegroundColor Cyan`,
+      `Write-Host '\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557' -ForegroundColor Cyan`,
+      `Write-Host '${cLine1}' -ForegroundColor Cyan`,
+      `Write-Host '\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563' -ForegroundColor Cyan`,
+      `Write-Host '${cLine2}' -ForegroundColor White`,
+      `Write-Host '${cLine3}' -ForegroundColor White`,
+      `Write-Host '\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563' -ForegroundColor Cyan`,
+      `Write-Host '${cLine4}' -ForegroundColor Green`,
+      `Write-Host '${cLine5}' -ForegroundColor Yellow`,
+      `Write-Host '\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d' -ForegroundColor Cyan`,
       `Write-Host ''`,
       `Write-Host 'Task file content:' -ForegroundColor Gray`,
       `Get-Content '${taskPath.replace(/'/g, "''")}' | Write-Host -ForegroundColor Gray`,
@@ -460,7 +532,7 @@ function runCursor(config: BridgeConfig, taskPath: string, taskName: string, _cl
 
 // ─── MCP Server ───────────────────────────────────────────────────────────────
 const server = new Server(
-  { name: 'autoclaude', version: '5.0.0' },
+  { name: 'autoclaude', version: '5.2.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -623,6 +695,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   ],
 }));
 
+// ─── Helper: pad a string to a target length (safe for unicode) ────────────────
+function padStr(s: string, len: number) {
+  return s.length >= len ? s : s + ' '.repeat(len - s.length);
+}
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const config = loadConfig();
 
@@ -654,20 +731,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     const resultLog = taskPath.replace(/\.md$/, '_result.log');
     const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
+
+    // Phase 5: Beautify dispatch_to_qwen response
+    const agentLabel = agent.label || agent.name;
+    const yoloStr = agent.yoloMode ? '\u2705 Auto-Approve ON' : '\u26a0\ufe0f Manual Confirm';
+    const modeStr = agent.showTerminal ? 'Visible Terminal' : 'Headless Background';
+    const W = 50;
+
     return {
       content: [{
         type: 'text' as const,
         text: [
-          `Dispatched to ${agent.label}`,
-          `   Task File   : ${taskPath}`,
-          `   Description : ${notifMsg}`,
-          `   YOLO mode   : ${agent.yoloMode ? 'ON (auto-approve all actions)' : 'OFF'}`,
-          `   Mode        : ${agent.showTerminal ? 'visible terminal' : 'headless background'}`,
-          `   Result Log  : ${resultLog}`,
-          `   Summary     : ${summaryPath}`,
+          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
+          '\u2502           Task Dispatched to Qwen Code               \u2502',
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+          `\u2502  Agent   : ${padStr(agentLabel, W - 12)}\u2502`,
+          `\u2502  File    : ${padStr(path.basename(taskPath), W - 12)}\u2502`,
+          `\u2502  Mode    : ${padStr(modeStr, W - 12)}\u2502`,
+          `\u2502  YOLO    : ${padStr(yoloStr, W - 12)}\u2502`,
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+          `\u2502  \ud83d\udcc4 Result : ${padStr(path.basename(resultLog), W - 12)}\u2502`,
+          `\u2502  \ud83d\udccb Report : ${padStr(path.basename(summaryPath), W - 12)}\u2502`,
+          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
           '',
-          'AutoClaude dispatched. Agent executing in background.',
-          'Check _summary.md for the process report and _result.log for raw output.',
+          '\ud83d\ude80 Agent executing in background. Check _summary.md when done.',
         ].join('\n'),
       }],
     };
@@ -712,20 +799,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     runCursor(config, taskPath, taskName, clipboardOk);
 
+    // Phase 5: Beautify dispatch_to_cursor response
+    const W = 50;
     return {
       content: [{
         type: 'text' as const,
         text: [
-          'Dispatched to Cursor',
-          `   File       : ${taskPath}`,
-          `   Task       : ${notifMsg}`,
-          `   Clipboard  : ${clipboardOk ? 'Task content copied (Ctrl+V into Cursor AI chat)' : 'Copy failed -- paste task file manually'}`,
-          `   Terminal   : ${config.agents['cursor']?.showTerminal ? 'visible' : 'headless'}`,
-          '',
+          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
+          '\u2502           Task Dispatched to Cursor                  \u2502',
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+          `\u2502  File       : ${padStr(path.basename(taskPath), W - 15)}\u2502`,
+          `\u2502  Clipboard  : ${padStr(clipboardOk ? '\u2705 Copied (Ctrl+V into Cursor)' : '\u274c Copy failed', W - 15)}\u2502`,
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
           clipboardOk
-            ? 'Task content is in clipboard. Open Cursor AI chat and press Ctrl+V.'
-            : 'Open the task file manually in Cursor.',
-          'Claude is free -- Cursor AI runs independently using its own tokens.',
+            ? `\u2502  \u27a1\ufe0f ${padStr('Open Cursor AI chat and press Ctrl+V', W - 6)}\u2502`
+            : `\u2502  \u26a0\ufe0f ${padStr('Open the task file manually in Cursor', W - 6)}\u2502`,
+          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
+          '',
+          '\ud83d\ude80 Claude is free \u2014 Cursor AI runs independently using its own tokens.',
         ].join('\n'),
       }],
     };
@@ -757,7 +848,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (config.speechOnDispatch) sendSpeech(`${config.speechText} to ${agent.label}`);
 
     // Cursor uses clipboard model; others use headless CLI model
-    if (agent.name === 'cursor') {
+    if (agent.name === 'cursor' || agent.type === 'clipboard') {
       const taskContent = fs.readFileSync(taskPath, 'utf-8');
       let clipboardOk = false;
       try { copyToClipboard(taskContent); clipboardOk = true; } catch {}
@@ -768,20 +859,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     const resultLog = taskPath.replace(/\.md$/, '_result.log');
     const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
+
+    // Phase 5: Beautify dispatch_task response
+    const agentLabel = agent.label || agent.name;
+    const yoloStr = agent.yoloMode ? '\u2705 Auto-Approve ON' : '\u26a0\ufe0f Manual Confirm';
+    const modeStr = agent.showTerminal ? 'Visible Terminal' : 'Headless Background';
+    const W = 50;
+
     return {
       content: [{
         type: 'text' as const,
         text: [
-          `Dispatched to ${agent.label} [active agent]`,
-          `   Task File   : ${taskPath}`,
-          `   Description : ${notifMsg}`,
-          `   YOLO mode   : ${agent.yoloMode ? 'ON (auto-approve all actions)' : 'OFF'}`,
-          `   Mode        : ${agent.showTerminal ? 'visible terminal' : 'headless background'}`,
-          `   Result Log  : ${resultLog}`,
-          `   Summary     : ${summaryPath}`,
+          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
+          '\u2502           Task Dispatched                        \u2502',
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+          `\u2502  Agent   : ${padStr(agentLabel, W - 12)}\u2502`,
+          `\u2502  File    : ${padStr(path.basename(taskPath), W - 12)}\u2502`,
+          `\u2502  Mode    : ${padStr(modeStr, W - 12)}\u2502`,
+          `\u2502  YOLO    : ${padStr(yoloStr, W - 12)}\u2502`,
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+          `\u2502  \ud83d\udcc4 Result : ${padStr(path.basename(resultLog), W - 12)}\u2502`,
+          `\u2502  \ud83d\udccb Report : ${padStr(path.basename(summaryPath), W - 12)}\u2502`,
+          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
           '',
-          `AutoClaude dispatched to ${agent.label}. Agent executing in background.`,
-          'Check _summary.md for the process report and _result.log for raw output.',
+          '\ud83d\ude80 Agent executing in background. Check _summary.md when done.',
         ].join('\n'),
       }],
     };
@@ -789,28 +890,36 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   // -- list_agents ------------------------------------------------------------
   if (request.params.name === 'list_agents') {
-    const agentList = Object.entries(config.agents).map(([key, agent]) => {
-      const isActive = key === config.activeAgent;
-      return [
-        `${isActive ? '>> ' : '   '}${key}`,
-        `     Command  : ${agent.command}`,
-        `     Label    : ${agent.label}`,
-        `     YOLO     : ${agent.yoloMode ? 'ON' : 'OFF'}`,
-        `     Terminal : ${agent.showTerminal ? 'visible' : 'headless'}`,
-      ].join('\n');
-    });
+    // Phase 3: Beautify list_agents output
+    const W = 74;
+    const lines = [
+      '\u250c' + '\u2500'.repeat(W) + '\u2510',
+      '\u2502' + padStr('                         Configured Agents                               ', W) + '\u2502',
+      '\u251c' + '\u2500'.repeat(W) + '\u2524',
+    ];
+
+    for (const [id, agent] of Object.entries(config.agents)) {
+      const active = id === config.activeAgent ? '\u2b50' : '  ';
+      const yolo = agent.yoloMode ? '\u2705' : '\u274c';
+      const typeIcon = agent.type === 'clipboard' ? '\ud83d\udccb' : '\ud83d\udda5\ufe0f';
+      const name = padStr(agent.label || agent.name || id, 18);
+      const cmd = padStr(agent.command, 14);
+      const enabled = agent.enabled !== false;
+      const hint = enabled ? '' : ' (disabled)';
+      const row = ` ${active} ${name} ${typeIcon} YOLO:${yolo}  ${cmd}${hint}`;
+      lines.push('\u2502' + padStr(row, W) + '\u2502');
+    }
+
+    lines.push('\u251c' + '\u2500'.repeat(W) + '\u2524');
+    const activeAgent = config.agents[config.activeAgent];
+    const activeInfo = `  \u2b50 Active: ${activeAgent?.label || activeAgent?.name || config.activeAgent} \u2014 dispatch_task will use this agent`;
+    lines.push('\u2502' + padStr(activeInfo, W) + '\u2502');
+    lines.push('\u2514' + '\u2500'.repeat(W) + '\u2518');
+    lines.push('');
+    lines.push('Switch: switch_agent("<id>")  |  Add custom: add_custom_agent(...)');
 
     return {
-      content: [{
-        type: 'text' as const,
-        text: [
-          'Configured Agents:',
-          '',
-          ...agentList,
-          '',
-          `Active agent: ${config.activeAgent} (${config.agents[config.activeAgent]?.label ?? 'unknown'})`,
-        ].join('\n'),
-      }],
+      content: [{ type: 'text' as const, text: lines.join('\n') }],
     };
   }
 
@@ -829,21 +938,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    const oldAgent = config.activeAgent;
+    // Phase 4: Capture old agent name before switching
+    const oldAgent = config.agents[config.activeAgent];
+    const oldName = oldAgent?.label || oldAgent?.name || config.activeAgent;
+    const newAgent = config.agents[agent];
+
     config.activeAgent = agent;
     saveConfig(config);
+
+    const newLabel = newAgent.label || newAgent.name;
+    const W = 42;
 
     return {
       content: [{
         type: 'text' as const,
         text: [
-          `Switched active agent: ${oldAgent} -> ${agent}`,
-          `   Label   : ${config.agents[agent].label}`,
-          `   Command : ${config.agents[agent].command}`,
-          `   YOLO    : ${config.agents[agent].yoloMode ? 'ON' : 'OFF'}`,
+          '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
+          '\u2502         Agent Switched                    \u2502',
+          '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+          `\u2502  From : ${padStr(oldName, W - 11)}\u2502`,
+          `\u2502  To   : ${padStr(newLabel, W - 11)}\u2502`,
+          `\u2502  Cmd  : ${padStr(newAgent.command, W - 11)}\u2502`,
+          `\u2502  YOLO : ${padStr(newAgent.yoloMode ? '\u2705 ON' : '\u274c OFF', W - 11)}\u2502`,
+          '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
           '',
+          '\u2705 All dispatch_task calls will now use this agent.',
           'This change is persisted to config.json.',
-          'Use dispatch_task to send tasks to the new active agent.',
         ].join('\n'),
       }],
     };
@@ -895,36 +1015,34 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   // -- qwen_bridge_status -----------------------------------------------------
   if (request.params.name === 'qwen_bridge_status') {
+    // Phase 2: Beautify qwen_bridge_status output
     const cum = getCumulativeSavings();
-    const activeAgent = getActiveAgent(config);
-    const agentList = Object.entries(config.agents).map(([k, a]) => `${k} (${a.label})`).join(', ');
+    const agent = getActiveAgent(config);
+    const enabledCount = Object.values(config.agents).filter(a => a.enabled !== false).length;
+    const totalCount = Object.keys(config.agents).length;
+    const W = 53;
 
     return {
       content: [{
         type: 'text' as const,
         text: [
-          'AutoClaude is running (v5.0)',
+          '\u250c' + '\u2500'.repeat(W) + '\u2510',
+          '\u2502' + padStr('              AutoClaude v5.2 \u2014 Status               ', W) + '\u2502',
+          '\u251c' + '\u2500'.repeat(W) + '\u2524',
+          `\u2502  Active Agent : ${padStr(agent.label || agent.name, W - 19)}\u2502`,
+          `\u2502  Command      : ${padStr(agent.command, W - 19)}\u2502`,
+          `\u2502  YOLO Mode    : ${padStr(agent.yoloMode ? '\u2705 ON' : '\u274c OFF', W - 19)}\u2502`,
+          `\u2502  Terminal     : ${padStr(config.showTerminal ? 'visible' : 'headless background', W - 19)}\u2502`,
+          '\u251c' + '\u2500'.repeat(W) + '\u2524',
+          `\u2502  Agents       : ${padStr(`${enabledCount} enabled / ${totalCount} total`, W - 19)}\u2502`,
+          `\u2502  Project Dir  : ${padStr((config.projectDir || '').substring(0, W - 19), W - 19)}\u2502`,
+          '\u251c' + '\u2500'.repeat(W) + '\u2524',
+          `\u2502  \ud83d\udcb0 Savings  : ${padStr(`${cum.tasks} tasks \u00b7 ${cum.tokensSaved.toLocaleString()} tokens \u00b7 $${cum.costSaved.toFixed(2)}`, W - 19)}\u2502`,
+          '\u2514' + '\u2500'.repeat(W) + '\u2518',
           '',
-          'Current config:',
-          `  projectDir      : ${config.projectDir}`,
-          `  terminalApp     : ${config.terminalApp}`,
-          `  notifyOnDispatch: ${config.notifyOnDispatch}`,
-          `  speechOnDispatch: ${config.speechOnDispatch}`,
-          `  activeAgent     : ${config.activeAgent} (${activeAgent.label})`,
-          `  agents          : ${agentList}`,
-          '',
-          'Available tools:',
-          '  dispatch_to_qwen    — dispatch QWEN_*.md to Qwen Code',
-          '  dispatch_to_cursor  — dispatch CURSOR_*.md to Cursor AI (clipboard + launch)',
-          '  dispatch_task       — dispatch to active agent (agent-agnostic)',
-          '  list_agents         — list all configured agents',
-          '  switch_agent        — switch the active agent',
-          '  add_custom_agent    — add a new agent to config',
-          '  qwen_bridge_status  — this status check',
-          '  get_task_report     — read _summary.md for a dispatched task',
-          '  get_savings_report  — show cumulative token & cost savings',
-          '',
-          `Cumulative Savings: ${cum.tasks} tasks, ~${cum.tokensSaved.toLocaleString()} tokens, $${cum.costSaved.toFixed(2)}`,
+          'Tools: dispatch_task \u00b7 dispatch_to_qwen \u00b7 dispatch_to_cursor',
+          '       list_agents \u00b7 switch_agent \u00b7 add_custom_agent',
+          '       get_task_report \u00b7 get_savings_report \u00b7 qwen_bridge_status',
         ].join('\n'),
       }],
     };
@@ -954,16 +1072,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (!fs.existsSync(summaryPath)) {
+      // Phase 7: Beautify auto-finalize / not-found message
+      const W = 50;
       return {
         content: [{
           type: 'text' as const,
           text: [
-            `No report found for: ${path.basename(taskPath)}`,
-            '',
-            `Expected at: ${summaryPath}`,
-            '',
-            'The task may still be running, or no summary was generated.',
-            `Check if _result.log exists: ${fs.existsSync(resultLog) ? 'Yes' : 'No'}`,
+            '\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510',
+            '\u2502            \ud83d\udccb Task Report                        \u2502',
+            '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+            `\u2502  Task  : ${padStr(path.basename(taskPath), W - 11)}\u2502`,
+            `\u2502  Status: ${padStr('\u23f3 Still running...', W - 11)}\u2502`,
+            '\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524',
+            `\u2502  \ud83d\udcc4 Raw log: ${padStr(fs.existsSync(resultLog) ? path.basename(resultLog) + ' exists' : 'No result log yet', W - 11)}\u2502`,
+            '\u2502  \ud83d\udca1 The report will auto-finalize when output    \u2502',
+            '\u2502     is detected in the result log.              \u2502',
+            '\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518',
           ].join('\n'),
         }],
       };
@@ -980,33 +1104,36 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   // -- get_savings_report -----------------------------------------------------
   if (request.params.name === 'get_savings_report') {
+    // Phase 6: Beautify get_savings_report output
     const cum = getCumulativeSavings();
     const all = loadSavings();
     const last5 = all.slice(-5).reverse();
+    const W = 50;
 
     const lines = [
-      'AutoClaude Savings Report',
-      '',
-      'Claude API Pricing: Opus 4.7 ($5.00/1M input, $25.00/1M output)',
-      '',
-      '## Cumulative Savings',
-      '',
-      `| Metric | Value |`,
-      `|--------|-------|`,
-      `| **Total Tasks Dispatched** | ${cum.tasks} |`,
-      `| **Total Tokens Saved** | **~${cum.tokensSaved.toLocaleString()}** |`,
-      `| **Total Cost Saved** | **$${cum.costSaved.toFixed(2)}** |`,
-      '',
+      '\u250c' + '\u2500'.repeat(W) + '\u2510',
+      '\u2502' + padStr('            \ud83d\udcb0 Savings Report                     ', W) + '\u2502',
+      '\u251c' + '\u2500'.repeat(W) + '\u2524',
+      `\u2502  Tasks     : ${padStr(String(cum.tasks), W - 16)}\u2502`,
+      `\u2502  Tokens    : ${padStr(cum.tokensSaved.toLocaleString() + ' saved', W - 16)}\u2502`,
+      `\u2502  Cost      : ${padStr('$' + cum.costSaved.toFixed(2) + ' saved', W - 16)}\u2502`,
+      '\u251c' + '\u2500'.repeat(W) + '\u2524',
     ];
 
     if (last5.length > 0) {
-      lines.push('| Task | Tokens Saved | Cost Saved |', '|------|-------------|------------|');
-      for (const s of last5) {
-        lines.push(`| ${s.taskName} | ${s.tokensSaved.toLocaleString()} tokens | $${s.costSaved.toFixed(4)} saved |`);
+      lines.push('\u2502' + padStr('  Recent Tasks:', W) + '\u2502');
+      for (const s of last5.slice(0, 5)) {
+        const shortName = s.taskName.substring(0, 25);
+        const row = `  \ud83d\udccb ${padStr(shortName, 25)} ${s.tokensSaved.toLocaleString().padStart(8)} tk  $${s.costSaved.toFixed(2).padStart(6)}`;
+        lines.push('\u2502' + padStr(row, W) + '\u2502');
       }
+      lines.push('\u251c' + '\u2500'.repeat(W) + '\u2524');
+    }
+
+    lines.push('\u2514' + '\u2500'.repeat(W) + '\u2518');
+    if (cum.tasks > 0) {
       lines.push('');
-      lines.push(`> Average savings: **~${Math.round(cum.tokensSaved / cum.tasks).toLocaleString()} tokens ($${(cum.costSaved / cum.tasks).toFixed(4)})** per task`);
-      lines.push(`> At legacy Opus 4.5 pricing ($15/$75), savings would be **~$${(cum.costSaved * 3).toFixed(2)}**`);
+      lines.push(`\ud83d\udca1 Average: ~${Math.round(cum.tokensSaved / cum.tasks).toLocaleString()} tokens ($${(cum.costSaved / cum.tasks).toFixed(3)}) saved per task`);
     }
 
     return {
