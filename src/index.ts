@@ -10,7 +10,7 @@ import type { BridgeConfig, AgentConfig } from './types.js';
 import { loadConfig, saveConfig, getActiveAgent } from './config.js';
 import { getToolDefinitions } from './tools.js';
 import { runCliAgent, runClipboardAgent, listAgents, switchAgent, checkAgentInstalled, verifyAgentAuth } from './agents.js';
-import { getCumulativeSavings, updateProjectReport, finalizeTaskSummary, loadSavings } from './reports.js';
+import { getCumulativeSavings, updateProjectReport, finalizeTaskSummary, loadSavings, scanForAuthIssues } from './reports.js';
 import { sendWindowsNotification, sendSpeech, copyToClipboard } from './notifications.js';
 
 function getVersion(): string {
@@ -176,6 +176,40 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       results.push('');
       results.push(results.some(l => l.startsWith('❌')) ? '❌ Issues found. Fix before next dispatch.' : '✅ All checks passed.');
       return { content: [{ type: 'text' as const, text: results.join('\n') }] };
+    }
+
+    // ── check_task_status ────────────────────────────────────────────────────
+    if (toolName === 'check_task_status') {
+      const taskPath = path.isAbsolute(args.task_file) ? args.task_file : path.join(config.projectDir, args.task_file);
+      const resultLog = taskPath.replace(/\.md$/, '_result.log');
+      if (!fs.existsSync(resultLog)) return { content: [{ type: 'text' as const, text: '⏳ Task still starting — no result log yet.' }] };
+      const content = fs.readFileSync(resultLog, 'utf-8');
+      if (!content || content.length < 10) return { content: [{ type: 'text' as const, text: '⏳ Task running — result log is still empty. Check again in 30s.' }] };
+
+      const summaryPath = taskPath.replace(/\.md$/, '_summary.md');
+      const isComplete = fs.existsSync(summaryPath) && fs.readFileSync(summaryPath, 'utf-8').includes('Completion Status');
+
+      const agent = getActiveAgent(config);
+      const issues = scanForAuthIssues(resultLog, agent.command, agent.installHint);
+
+      if (issues.length > 0) {
+        const lines = ['🔐 **Action Required — Auth/Error Detected**', ''];
+        for (const iss of issues) {
+          lines.push(`### ${iss.label}`);
+          lines.push(`**Fix:** ${iss.fix}`);
+          lines.push(`*Matched:* \`${iss.matchedText}\``);
+          lines.push('');
+        }
+        lines.push('⚠️ The agent cannot continue until this is resolved.');
+        lines.push('After fixing, re-dispatch the task or call `verify_agent_auth` to confirm readiness.');
+        return { content: [{ type: 'text' as const, text: lines.join('\n') }] };
+      }
+
+      if (isComplete) {
+        return { content: [{ type: 'text' as const, text: '✅ Task completed. Use `get_task_report("' + path.basename(taskPath) + '")` to see the full report.' }] };
+      }
+
+      return { content: [{ type: 'text' as const, text: '⏳ Task running — no issues detected. Last output preview:\n\n```\n' + content.substring(Math.max(0, content.length - 500)).trim() + '\n```' }] };
     }
 
   } catch (e: any) {

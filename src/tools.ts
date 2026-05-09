@@ -65,5 +65,10 @@ export function getToolDefinitions() {
       description: 'Verify project health: TypeScript compilation, module integrity, orphaned helper scripts. Run this after each task dispatch to ensure the project is clean.',
       inputSchema: { type: 'object' as const, properties: {} },
     },
+    {
+      name: 'check_task_status',
+      description: 'Check if a dispatched task needs user intervention (auth, login, permissions, rate limits). Scans the result log for common auth/error patterns. Use this after dispatch to see if the agent needs help.',
+      inputSchema: { type: 'object' as const, properties: { task_file: { type: 'string', description: 'Path to the task file.' } }, required: ['task_file'] },
+    },
   ];
 }

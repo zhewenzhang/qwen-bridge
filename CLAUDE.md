@@ -118,6 +118,35 @@ When planning complex tasks, Claude SHOULD invoke these skills BEFORE writing th
 
 This ensures every task follows the **Plan → Template → Dispatch → Verify → Report** cycle.
 
+### Auth Forwarding Protocol
+
+When a dispatched agent encounters authentication errors, Claude MUST follow this protocol:
+
+1. **Check status after dispatch** — Call `check_task_status("QWEN_TASK.md")` 30-60s after dispatching
+2. **If auth detected** — `check_task_status` returns 🔐 with the specific issue and fix instructions
+3. **Notify user** — Claude MUST immediately tell the user:
+   ```
+   ⚠️ <Agent> needs your attention:
+   
+   Issue: <auth label>
+   Fix: <specific command to run>
+   
+   Please run this command, then I'll re-dispatch the task.
+   ```
+4. **Wait for user** — Do NOT re-dispatch until the user confirms the fix
+5. **Verify fix** — Call `verify_agent_auth("<agent_id>")` after user fixes
+6. **Re-dispatch** — Only after verification passes
+
+### Common auth scenarios and fixes:
+
+| Agent | Auth Issue | User Action |
+|-------|-----------|-------------|
+| NPM | `npm login` needed | User runs `npm login` in terminal |
+| GitHub | `gh auth login` needed | User runs `gh auth login` |
+| Gemini CLI | Folder not trusted | User runs `gemini trust` |
+| Qwen Code | API key not set | User runs `qwen auth` |
+| Any agent | 401/403 error | User checks subscription/API key |
+
 ---
 
 ### Available MCP Tools
