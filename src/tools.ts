@@ -80,5 +80,17 @@ export function getToolDefinitions() {
       description: 'Create a continuation task (_v2.md) for a task that was blocked. Reads the original task and result log, creates a focused mini-task with only the remaining steps.',
       inputSchema: { type: 'object' as const, properties: { task_file: { type: 'string', description: 'Path to the original task file.' } }, required: ['task_file'] },
     },
+
+    {
+      name: 'user_prompt',
+      description: 'Show a desktop popup dialog to the user. Mode: "input" (text input box for OTP codes etc), "confirm" (Yes/No dialog), "alert" (info message). Use this when the agent needs user input like auth codes or confirmations.',
+      inputSchema: { type: 'object' as const, properties: { mode: { type: 'string', description: 'input, confirm, or alert' }, message: { type: 'string', description: 'Message to show' }, title: { type: 'string', description: 'Dialog title (optional)' } }, required: ['message'] },
+    },
+    {
+      name: 'session_status',
+      description: 'Show current session statistics: tasks dispatched, Claude vs Agent tokens, savings, and time elapsed. Use after each task to report progress to the user.',
+      inputSchema: { type: 'object' as const, properties: {} },
+    },
+
   ];
 }

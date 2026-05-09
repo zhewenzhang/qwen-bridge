@@ -11,13 +11,63 @@ import { loadConfig, saveConfig, getActiveAgent } from './config.js';
 import { getToolDefinitions } from './tools.js';
 import { runCliAgent, runClipboardAgent, listAgents, switchAgent, checkAgentInstalled, verifyAgentAuth } from './agents.js';
 import { getCumulativeSavings, updateProjectReport, finalizeTaskSummary, loadSavings, scanForAuthIssues } from './reports.js';
-import { sendWindowsNotification, sendSpeech, copyToClipboard } from './notifications.js';
+import { sendWindowsNotification, sendSpeech, copyToClipboard, userPrompt } from './notifications.js';
 
 function getVersion(): string {
   try {
     const pkgPath = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'package.json');
     return JSON.parse(readFileSync(pkgPath, 'utf-8')).version || '5.5.0';
   } catch { return '5.5.0'; }
+}
+
+
+const SESSION_FILE = '.autoclaude_session.json';
+
+function getSessionPath(): string {
+  const cfg = loadConfig();
+  return path.join(cfg.projectDir, SESSION_FILE);
+}
+
+interface SessionEntry {
+  taskName: string;
+  timestamp: string;
+  claudeTokens: number;
+  agentTokens: number;
+  tokensSaved: number;
+  costSaved: number;
+}
+
+function recordSessionTask(taskName: string, claudeTokens: number, agentTokens: number, tokensSaved: number, costSaved: number): void {
+  const sp = getSessionPath();
+  let entries: SessionEntry[] = [];
+  try { if (fs.existsSync(sp)) entries = JSON.parse(fs.readFileSync(sp, 'utf-8')); } catch {}
+  if (!entries.some(e => e.taskName === taskName)) {
+    entries.push({ taskName, timestamp: new Date().toISOString(), claudeTokens, agentTokens, tokensSaved, costSaved });
+    fs.writeFileSync(sp, JSON.stringify(entries, null, 2), 'utf-8');
+  }
+}
+
+function getSessionStatus(): string {
+  const sp = getSessionPath();
+  let entries: SessionEntry[] = [];
+  try { if (fs.existsSync(sp)) entries = JSON.parse(fs.readFileSync(sp, 'utf-8')); } catch {}
+  const totalClaude = entries.reduce((s, e) => s + e.claudeTokens, 0);
+  const totalAgent = entries.reduce((s, e) => s + e.agentTokens, 0);
+  const totalSaved = entries.reduce((s, e) => s + e.tokensSaved, 0);
+  const totalCost = entries.reduce((s, e) => s + e.costSaved, 0);
+  const firstTime = entries.length > 0 ? entries[0].timestamp : new Date().toISOString();
+  return [
+    '\u2500\u2500 Session Status \u2500\u2500',
+    '',
+    'Tasks : ' + entries.length,
+    'Tokens: Claude ~' + totalClaude.toLocaleString() + ' | Agent ~' + totalAgent.toLocaleString(),
+    'Saved : ~' + totalSaved.toLocaleString() + ' tokens ($' + totalCost.toFixed(2) + ')',
+    'Start : ' + new Date(firstTime).toLocaleString(),
+    '',
+    entries.length > 0
+      ? 'Last: ' + entries[entries.length - 1].taskName.replace(/^QWEN_/, '').replace(/_/g, ' ').substring(0, 40)
+      : 'No tasks yet.',
+  ].join('\n');
 }
 
 const server = new Server({ name: 'autoclaude', version: getVersion() }, { capabilities: { tools: {} } });
@@ -119,6 +169,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
       }
       try { updateProjectReport(); } catch {}
+      // Record to session tracking
+      try {
+        const s = loadSavings().find((e: any) => e.taskName === path.basename(taskPath, '.md'));
+        if (s) {
+          recordSessionTask(s.taskName, s.claudeTokensIn + s.claudeTokensOut, s.estimatedExecutionTokensIn + s.estimatedExecutionTokensOut, s.tokensSaved, s.costSaved);
+        }
+      } catch {}
       if (!fs.existsSync(summaryPath)) return { content: [{ type: 'text' as const, text: 'No report yet. Task may still be running.' }] };
       return { content: [{ type: 'text' as const, text: fs.readFileSync(summaryPath, 'utf-8') }] };
     }
@@ -290,6 +347,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       fs.writeFileSync(v2Path, v2Content, 'utf-8');
 
       return { content: [{ type: 'text' as const, text: '── Continuation Task Created ──\n\nOriginal: ' + path.basename(taskPath) + '\nContinue: ' + path.basename(v2Path) + '\n\nDispatch with: dispatch_task("' + path.basename(v2Path) + '")' }] };
+    }
+
+
+    // \u2500\u2500 session_status \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    if (toolName === 'session_status') {
+      return { content: [{ type: 'text' as const, text: getSessionStatus() }] };
+    }
+
+    // \u2500\u2500 user_prompt \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    if (toolName === 'user_prompt') {
+      const { mode, message, title } = args as { mode?: string; message: string; title?: string };
+      const m = mode || 'alert';
+      if (!['input', 'confirm', 'alert'].includes(m)) return { content: [{ type: 'text' as const, text: '\u274c Invalid mode. Use: input, confirm, or alert.' }], isError: true };
+      try {
+        const result = userPrompt(m as 'input' | 'confirm' | 'alert', message, title);
+        if (m === 'confirm') return { content: [{ type: 'text' as const, text: result === 'yes' ? '\u2705 User confirmed.' : '\u274c User declined.' }] };
+        if (m === 'input') return { content: [{ type: 'text' as const, text: result ? '\ud83d\udddd Input received: "' + result + '"' : '\u26a0\ufe0f No input provided (cancelled).' }] };
+        return { content: [{ type: 'text' as const, text: '\u2705 Alert shown.' }] };
+      } catch (e: any) {
+        return { content: [{ type: 'text' as const, text: '\u274c Popup failed: ' + (e.message || '') }], isError: true };
+      }
     }
 
   } catch (e: any) {

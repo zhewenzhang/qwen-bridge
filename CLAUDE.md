@@ -170,6 +170,33 @@ Claude: "I can't dispatch until git is configured. Run:
         Then tell me 'ready'."
 ```
 
+
+### MANDATORY Task Closeout (after EVERY task)
+
+After each task completes, Claude MUST execute this exact sequence:
+
+```
+1. get_task_report("QWEN_TASK.md")   → auto-finalize + record to session
+2. session_status                     → get updated counters
+3. Tell the user:
+   "✅ <task name> complete
+   Claude ~X,XXX tokens | Agent ~XX,XXX tokens | Saved ~XX,XXX ($X.XX)
+   Session: N tasks | ~XXX,XXX tokens saved | $X.XX total"
+```
+
+**This is MANDATORY. Do NOT skip this for any task.** The user must see the cost breakdown after every dispatch.
+
+### Desktop Popup Use Cases
+
+When user input is needed, use `user_prompt` instead of asking via text:
+
+| Scenario | Tool Call |
+|----------|-----------|
+| Need OTP/2FA code | `user_prompt("input", "Enter your 6-digit verification code", "NPM 2FA")` |
+| Confirm risky action | `user_prompt("confirm", "Publish autoclaude @5.7.0 to NPM?", "Confirm Publish")` |
+| Task complete alert | `user_prompt("alert", "Task completed: 3 files changed, ~18K tokens saved", "AutoClaude")` |
+
+
 ### Common auth scenarios and fixes:
 
 | Agent | Auth Issue | User Action |

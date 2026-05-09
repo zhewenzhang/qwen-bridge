@@ -29,3 +29,39 @@ export function copyToClipboard(text: string): void {
   const escaped = text.replace(/'/g, "''");
   execSync(`powershell -Command "Set-Clipboard -Value '${escaped}'"`, { timeout: 5000, stdio: 'pipe' });
 }
+
+export function userPrompt(mode: 'input' | 'confirm' | 'alert', message: string, title?: string): string {
+  const t = (title || 'AutoClaude').replace(/'/g, "''");
+  const m = message.replace(/'/g, "''");
+  
+  if (mode === 'input') {
+    const ps = `
+      Add-Type -AssemblyName Microsoft.VisualBasic
+      [Microsoft.VisualBasic.Interaction]::InputBox('${m}', '${t}', '')
+    `.trim();
+    try {
+      return execSync(`powershell -Command "${ps}"`, { timeout: 120000, encoding: 'utf-8', stdio: 'pipe' }).trim();
+    } catch { return ''; }
+  }
+  
+  if (mode === 'confirm') {
+    const ps = `
+      Add-Type -AssemblyName System.Windows.Forms
+      $r = [System.Windows.Forms.MessageBox]::Show('${m}', '${t}', [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+      if ($r -eq 'Yes') { Write-Output 'yes' } else { Write-Output 'no' }
+    `.trim();
+    try {
+      return execSync(`powershell -Command "${ps}"`, { timeout: 120000, encoding: 'utf-8', stdio: 'pipe' }).trim();
+    } catch { return 'no'; }
+  }
+  
+  const ps = `
+    Add-Type -AssemblyName System.Windows.Forms
+    [System.Windows.Forms.MessageBox]::Show('${m}', '${t}', [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+    Write-Output 'ok'
+  `.trim();
+  try {
+    execSync(`powershell -Command "${ps}"`, { timeout: 30000, encoding: 'utf-8', stdio: 'pipe' });
+    return 'ok';
+  } catch { return 'error'; }
+}
