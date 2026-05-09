@@ -142,7 +142,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const agent = getActiveAgent(config);
       const enabledCount = Object.values(config.agents).filter(a => a.enabled).length;
       const totalCount = Object.keys(config.agents).length;
-      return { content: [{ type: 'text' as const, text: mkBridgeStatus(agent, cum, enabledCount, totalCount) }] };
+      return { content: [{ type: 'text' as const, text: mkBridgeStatus(config, agent, cum, enabledCount, totalCount) }] };
     }
 
     // ── verify_project ───────────────────────────────────────────────────────
@@ -322,20 +322,21 @@ function mkSavingsReport(cum: { tasks: number; tokensSaved: number; costSaved: n
   ].join('\n');
 }
 
-function mkBridgeStatus(agent: AgentConfig, cum: { tasks: number; tokensSaved: number; costSaved: number }, enabledCount: number, totalCount: number): string {
+function mkBridgeStatus(config: BridgeConfig, agent: AgentConfig, cum: { tasks: number; tokensSaved: number; costSaved: number }, enabledCount: number, totalCount: number): string {
   return [
-    '## AutoClaude ' + getVersion() + ' - Status',
+    '── AutoClaude ' + getVersion() + ' ──',
     '',
-    '| Field | Value |',
-    '|-------|-------|',
-    '| Active Agent | ' + (agent.label || agent.name) + ' (`' + agent.name + '`) |',
-    '| YOLO Mode | ' + (agent.yoloMode ? 'ON' : 'OFF') + ' |',
-    '| Terminal | ' + (agent.showTerminal ? 'Visible' : 'Headless background') + ' |',
-    '| Agents | ' + enabledCount + ' enabled / ' + totalCount + ' total |',
-    '| Project Dir | `' + cum.tasks + '` |',
-    '| Savings | ' + cum.tasks + ' tasks |',
+    'Active Agent : ' + (agent.label || agent.name) + ' (`' + config.activeAgent + '`)',
+    'Command      : ' + agent.command,
+    'YOLO Mode    : ' + (agent.yoloMode ? '✅ ON' : '❌ OFF'),
+    'Terminal     : ' + (config.showTerminal ? 'visible' : 'headless background'),
+    'Agents       : ' + enabledCount + ' enabled / ' + totalCount + ' total',
+    'Project Dir  : ' + (config.projectDir || ''),
+    '💰 Savings   : ' + cum.tasks + ' tasks · ' + cum.tokensSaved.toLocaleString() + ' tokens · $' + cum.costSaved.toFixed(2),
     '',
-    'Tools: dispatch_task, list_agents, switch_agent, add_custom_agent, check_agent, verify_agent_auth, get_task_report, get_savings_report, get_project_report, qwen_bridge_status',
+    'Tools: dispatch_task · list_agents · switch_agent · add_custom_agent',
+    '       check_agent · verify_agent_auth · get_task_report',
+    '       get_savings_report · get_project_report · verify_project',
   ].join('\n');
 }
 
