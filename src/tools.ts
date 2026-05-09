@@ -70,5 +70,15 @@ export function getToolDefinitions() {
       description: 'Check if a dispatched task needs user intervention (auth, login, permissions, rate limits). Scans the result log for common auth/error patterns. Use this after dispatch to see if the agent needs help.',
       inputSchema: { type: 'object' as const, properties: { task_file: { type: 'string', description: 'Path to the task file.' } }, required: ['task_file'] },
     },
+    {
+      name: 'task_preflight',
+      description: 'Run pre-flight checks BEFORE dispatching a task. Checks agent auth, git config, GitHub CLI, NPM login based on task content. Fix all issues before dispatch.',
+      inputSchema: { type: 'object' as const, properties: { task_file: { type: 'string', description: 'Path to the task file to check.' } }, required: ['task_file'] },
+    },
+    {
+      name: 'task_continue',
+      description: 'Create a continuation task (_v2.md) for a task that was blocked. Reads the original task and result log, creates a focused mini-task with only the remaining steps.',
+      inputSchema: { type: 'object' as const, properties: { task_file: { type: 'string', description: 'Path to the original task file.' } }, required: ['task_file'] },
+    },
   ];
 }

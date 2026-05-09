@@ -127,15 +127,48 @@ When a dispatched agent encounters authentication errors, Claude MUST follow thi
 3. **Notify user** — Claude MUST immediately tell the user:
    ```
    ⚠️ <Agent> needs your attention:
-   
+
    Issue: <auth label>
    Fix: <specific command to run>
-   
+
    Please run this command, then I'll re-dispatch the task.
    ```
 4. **Wait for user** — Do NOT re-dispatch until the user confirms the fix
 5. **Verify fix** — Call `verify_agent_auth("<agent_id>")` after user fixes
 6. **Re-dispatch** — Only after verification passes
+
+### Pre-flight Protocol (MANDATORY before every dispatch)
+
+Claude MUST run `task_preflight("QWEN_TASK.md")` before EVERY dispatch. Never dispatch with known issues.
+
+**If all green:** Dispatch immediately.
+**If issues found:** Tell user what to fix, wait for "ready" confirmation, re-run preflight, then dispatch.
+
+**User interaction examples:**
+
+```
+Claude: "Before I dispatch, let me check prerequisites..."
+  → task_preflight → "⚠️ NPM not logged in"
+
+Claude: "This task publishes to NPM. Please run `npm login` first."
+
+User: "done"
+
+Claude: → task_preflight → all green → dispatch ✅
+```
+
+```
+Claude: "Before I dispatch..."
+
+User: "just do it"
+
+Claude: → task_preflight → "⚠️ Git user.name not set"
+
+Claude: "I can't dispatch until git is configured. Run: 
+        git config --global user.name 'Your Name'
+        git config --global user.email 'your @email.com'
+        Then tell me 'ready'."
+```
 
 ### Common auth scenarios and fixes:
 
@@ -164,6 +197,8 @@ When a dispatched agent encounters authentication errors, Claude MUST follow thi
 | `get_task_report` | Read task execution report |
 | `get_savings_report` | View cumulative token savings |
 | `get_project_report` | View master project report |
+| `task_preflight` | **Run before every dispatch** — check agent auth, git config, GitHub CLI, NPM login |
+| `task_continue` | Create a continuation task (_v2.md) from a blocked task |
 
 ### Dispatch Command Pattern
 
