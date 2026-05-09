@@ -12,6 +12,7 @@
 - 🔐 `verify_agent_auth` tool — pre-flight auth check before dispatching
 - 🔍 Auto-detects auth errors, rate limits, missing installations
 - 📋 Guides user through auth setup for each agent
+- 🌙 Dark mode toggle on landing page — persistent preference via localStorage
 
 ---
 

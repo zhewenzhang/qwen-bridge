@@ -121,11 +121,32 @@ body {
     background: rgba(49, 168, 255, 0.1);
     color: #31a8ff;
 }
+/* Dark mode overrides */
+.dark body { background-color: #0f172a; color: #e2e8f0; }
+.dark .glass-card { background: linear-gradient(135deg, rgba(30,41,59,0.6) 0%, rgba(15,23,42,0.4) 100%); border-color: rgba(255,255,255,0.08); }
+.dark .glass-panel { background: rgba(15,23,42,0.5); border-color: rgba(255,255,255,0.1); }
+.dark .bg-surface-container-low { background-color: #1e293b; }
+.dark .bg-surface-container-lowest { background-color: #0f172a; }
+.dark .text-on-background { color: #f1f5f9; }
+.dark .text-on-surface-variant { color: #94a3b8; }
+.dark .text-on-surface { color: #e2e8f0; }
+.dark .text-slate-500 { color: #94a3b8; }
+.dark .text-slate-900 { color: #f1f5f9; }
+.dark .border-outline-variant { border-color: rgba(255,255,255,0.1); }
+.dark .border-white { border-color: rgba(255,255,255,0.1); }
+.dark code { background: #1e293b; color: #e2e8f0; }
+.dark nav { background: rgba(15,23,42,0.6); border-color: rgba(255,255,255,0.08); }
+.dark footer { background: rgba(15,23,42,0.4); }
+.dark .hover\:bg-white\/10:hover { background: rgba(255,255,255,0.05); }
 </style>
 
 <script src="i18n.js"></script>
-</head>
-<body class="antialiased min-h-screen relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<script>
+function toggleDarkMode(){const e=document.documentElement;e.classList.contains('dark')?(e.classList.remove('dark'),localStorage.setItem('autoclaude_dark','false')):(e.classList.add('dark'),localStorage.setItem('autoclaude_dark','true'));updateDarkIcon()}
+function updateDarkIcon(){const e=document.getElementById('dark-toggle');if(!e)return;const c=e.querySelector('.material-symbols-outlined');c.textContent=document.documentElement.classList.contains('dark')?'light_mode':'dark_mode'}
+if(localStorage.getItem('autoclaude_dark')==='true'||(matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches&&!localStorage.getItem('autoclaude_dark')))document.documentElement.classList.add('dark');
+document.addEventListener('DOMContentLoaded',updateDarkIcon);
+</script>
 
 <!-- Ambient Background -->
 <div class="blob-bg bg-primary-container w-[600px] h-[600px] top-[-100px] left-[-200px]"></div>
@@ -143,6 +164,9 @@ body {
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="#features" data-i18n-nav="nav_features">Features</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude/tree/main/docs" target="_blank" data-i18n-nav="nav_docs">Docs</a>
         <a class="text-on-surface-variant hover:text-primary-container transition-all duration-300" href="https://github.com/zhewenzhang/AutoClaude" data-i18n-nav="nav_github">GitHub</a>
+        <button id="dark-toggle" onclick="toggleDarkMode()" class="text-sm font-medium text-on-surface-variant hover:text-primary-container transition-all duration-300 px-3 py-1.5 rounded-lg hover:bg-white/10" title="Toggle dark mode">
+          <span class="material-symbols-outlined text-lg">dark_mode</span>
+        </button>
         <button id="lang-toggle" onclick="switchLang(currentLang === 'zh' ? 'en' : 'zh')" class="text-sm font-medium text-on-surface-variant hover:text-primary-container transition-all duration-300 px-3 py-1.5 rounded-lg hover:bg-white/10">中文</button>
     </div>
     <a href="#getting-started" class="bg-primary-container text-on-primary px-6 py-2 rounded-lg font-medium hover:shadow-[0_0_15px_rgba(49,168,255,0.4)] transition-all duration-300 text-sm" data-i18n-nav="nav_start">Get Started</a>
