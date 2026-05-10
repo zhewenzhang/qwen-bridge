@@ -2,7 +2,7 @@
   "mcpServers": {
     "autoclaude": {
       "command": "node",
-      "args": ["D:\\qwen-bridge\\dist\\index.js"],
+      "args": ["./dist/index.js"],
       "env": {}
     }
   }
